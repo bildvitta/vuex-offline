@@ -1,3 +1,5 @@
+import { isObject } from './helpers'
+
 export default class Model {
   constructor (model) {
     if (Model.instance instanceof Model) {
@@ -12,10 +14,14 @@ export default class Model {
   }
 
   initialize () {
-    try {
-      this.normalizedModel = JSON.parse(this.model)
-    } catch (error) {
-      throw new Error('Please provide a valid model.', error)
+    if (isObject(this.model)) {
+      this.normalizedModel = this.model
+    } else {
+      try {
+        this.normalizedModel = JSON.parse(this.model)
+      } catch (error) {
+        throw new Error('Please provide a valid model.', error)
+      }
     }
 
     const requiredKeys = ['schema', 'fields']

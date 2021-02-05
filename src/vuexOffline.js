@@ -1,8 +1,16 @@
 import Model from './model'
+import PouchDBSetup from './pouchDBSetup'
+import PouchDBService from './pouchDBService'
 
 export default class {
-  constructor (options = {}) {
+  constructor (options = { pouchDBOptions: {} }) {
     this.idAttribute = options.idAttribute
+    this.pouchDBOptions = options.pouchDBOptions
+    this.databaseName = this.pouchDBOptions.alias || this.pouchDBOptions.name
+
+    // initialize PouchDB
+    this.pouchDB = new PouchDBSetup()
+    this.pouchDB.createDatabase(this.pouchDBOptions.name, this.pouchDBOptions.alias)
   }
 
   createStoreModule (resource, model, options = {}) {
@@ -10,9 +18,16 @@ export default class {
       throw new Error('Resource name or model must be sended.')
     }
 
-    const formattedModel = new Model(model)
 
+    const formattedModel = new Model(model)
+    const pouchDBService = new PouchDBService(this.pouchDB, this.databaseName)
+
+    const { filters, fields, schema } = formattedModel
     const idAttribute = options.idAttribute || this.idAttribute || '_id'
+
+    pouchDBService.createSchema(schema)
+
+    // console.log(pouchDBService, '>>>>>>>>>>')
 
     return {
       namespaced: options.namespaced || true,
@@ -56,10 +71,10 @@ export default class {
         },
 
         fetchList (
-          { commit }
+          { commit },
           { filters = {}, increment, ordering = [], page = 1, limit, search } = {}
         ) {
-
+          return false
         }
       }
     }
