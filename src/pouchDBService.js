@@ -3,7 +3,7 @@ import PouchDBSetup from './pouchDBSetup'
 export default class {
   constructor (pouchDB, databaseName) {
     if (!(pouchDB instanceof PouchDBSetup)) {
-      throw new Error('Please proviade an instance of PouchDBSetup.')
+      throw new Error('Please provide an instance of PouchDBSetup.')
     }
 
     this.databaseName = databaseName
@@ -15,7 +15,6 @@ export default class {
   }
 
   getDatabase (databaseName) {
-    console.log(this.pouchDB.getDatabase(''), '>>>>>>')
     return this.pouchDB.getDatabase(databaseName || this.databaseName)
   }
 }

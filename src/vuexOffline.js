@@ -10,6 +10,7 @@ export default class {
 
     // initialize PouchDB
     this.pouchDB = new PouchDBSetup()
+    this.pouchDB.initialize()
     this.pouchDB.createDatabase(this.pouchDBOptions.name, this.pouchDBOptions.alias)
   }
 
@@ -25,7 +26,7 @@ export default class {
     const { filters, fields, schema } = formattedModel
     const idAttribute = options.idAttribute || this.idAttribute || '_id'
 
-    pouchDBService.createSchema(schema)
+    pouchDBService.createSchema([schema])
 
     // console.log(pouchDBService, '>>>>>>>>>>')
 
