@@ -17,6 +17,8 @@ export default class {
       findPlugin: true,
       ...options
     }
+
+    this.initialize()
   }
 
   initialize () {
@@ -28,6 +30,7 @@ export default class {
 
     relationalPlugin && plugins.push(RelationalPouch)
     findPlugin && plugins.push(PouchDBFind)
+
 
     this.addPlugins(plugins)
   }
@@ -103,7 +106,6 @@ export default class {
    * myInstanceOfPouchDBSetup.deleteDatabase('myDatabase')
    */
   deleteDatabase (name, options = {}, callback = function () {}) {
-    console.log(callback)
     if (!this.getDatabase(name)) {
       throw new Error('Please provide a valid database to be deleted at function: "deleteDatabase"')
     }

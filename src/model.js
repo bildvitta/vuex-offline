@@ -2,11 +2,6 @@ import { isObject } from './helpers'
 
 export default class Model {
   constructor (model) {
-    if (Model.instance instanceof Model) {
-      return Model.instance.normalizedModel
-    }
-
-    Model.instance = this
     this.model = model
     this.normalizedModel = null
 
