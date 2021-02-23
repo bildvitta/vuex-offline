@@ -1,8 +1,9 @@
-import { isObject } from './helpers'
+import { isObject } from 'lodash'
+// import Relations from './relations'
 
 export default class Models {
   constructor (models) {
-    if (Models.instance instanceof Models) {
+    if (!models && Models.instance instanceof Models) {
       return Models.instance
     }
 
@@ -34,14 +35,33 @@ export default class Models {
     const schemas = []
 
     for (const key in this.normalizedModels) {
+      // const relations = new Relations(this.normalizedModels[key].fields, this.normalizedModels)
+
+      // relations.getRelationsFromFields()
       schemas.push(this.normalizedModels[key].schema)
     }
 
     return schemas
   }
 
+  getRelationByModel (model) {
+
+  }
+
   getFieldsByName (name) {
     return this.normalizedModels[name].fields
+  }
+
+  getFilters () {
+    const filters = {}
+
+    for (const key in this.normalizedModels) {
+      if (this.normalizedModels[key].filters) {
+        filters[key] = this.normalizedModels[key].filters
+      }
+    }
+
+    return filters
   }
 
   getFiltersByName (name) {

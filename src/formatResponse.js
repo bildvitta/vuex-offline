@@ -17,25 +17,27 @@ export default class {
         publicField[key] = object[key]
       }
     }
-  
+
     return publicField
   }
 
   filterPrivatesInObject (object) {
     const fields = {}
-  
+
     for (const key in object) {
       fields[key] = { ...this.filterPrivates(object[key]) }
     }
-  
+
     return fields
   }
 
   success (context = {}) {
     return {
-      status: { code: 200 },
-      ...omitBy(context, isUndefined),
-      fields: context.fields ? this.filterPrivatesInObject(context.fields) : this.fields
+      data: {
+        status: { code: 200 },
+        ...omitBy(context, isUndefined),
+        fields: context.fields ? this.filterPrivatesInObject(context.fields) : this.fields
+      }
     }
   }
 }
