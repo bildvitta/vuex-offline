@@ -1,9 +1,15 @@
-import PouchDBSetup from './pouchDBSetup'
+import DatabaseSetup from './databaseSetup'
 import PouchDBService from './pouchDBService'
 import Models from './models'
 import FormatError from './formatError'
 import FormatResponse from './formatResponse'
 import Relations from './relations'
+import CollectionHandler from './collectionHandler'
+import FiltersHandler from './filtersHandler'
+
+import {
+  comb
+} from './helpers'
 
 import {
   merge,
@@ -11,48 +17,31 @@ import {
 } from 'lodash'
 
 export default class {
-  constructor (options = { pouchDBOptions: {} }, vueInstance) {
-    if (!Object.keys(options.pouchDBOptions.models).length) {
-      throw new Error('Please provide at leats one model.')
-    }
-
+  constructor (options = { databaseOptions: {} }) {
     this.idAttribute = options.idAttribute
-    this.pouchDBOptions = options.pouchDBOptions
-    this.databaseName = this.pouchDBOptions.alias || this.pouchDBOptions.name
+    this.databaseOptions = options.databaseOptions
+    this.databaseName = this.databaseOptions.alias || this.databaseOptions.name
 
-    // create models
-    this.models = new Models(this.pouchDBOptions.models)
-    this.normalizedModels = this.models.normalizedModel
-    this.schemas = this.models.getSchemas()
-
-    this.relations = new Relations()
-    this.relations.getAllRelations()
-    
-
-    // initialize PouchDB
-    this.pouchDB = new PouchDBSetup()
-    this.pouchDB.createDatabase(this.pouchDBOptions.name, this.pouchDBOptions.alias)
-
-    // initialize DatabaseService
-    this.pouchDBService = new PouchDBService(this.pouchDB, {
-      databaseName: this.databaseName,
-      filters: this.models.getFilters()
-    })
-
-    this.pouchDBService.createSchema(this.schemas)
+    this.databaseSetup = new DatabaseSetup()
   }
 
-  createStoreModule (resource, options = {}) {
+  async createStoreModule (resource, options = { collectionOptions: {} }) {
     if (!resource) {
       throw new Error('Resource name must be sended.')
     }
 
+    await this.databaseSetup.createDatabase(this.databaseOptions)
+
+    const database = this.databaseSetup.getDatabase(this.databaseName)
     const idAttribute = options.idAttribute || this.idAttribute || 'id'
+    const collectionHandler = new CollectionHandler({
+      name: resource,
+      collectionOptions: options.collectionOptions,
+      database
+    })
 
-    // format response
-    const formatResponse = new FormatResponse(this.pouchDBOptions.models, resource)
-
-    const fields = this.models.getFieldsByName(resource)
+    await collectionHandler.addCollection()
+    const collection = collectionHandler.getCollection()
 
     const save = async ({ commit }, { payload, id, model } = {}) => {
       try {
@@ -147,13 +136,12 @@ export default class {
       actions: {
         create: async ({ commit }, { payload }) => {
           try {
-            const response = await this.pouchDBService.save(resource, payload)
-            const result = { ...response, ...payload }
+            const document = await collection.insert({ uuid: comb(), ...payload })
 
             commit('setErrors', { model: 'onCreate' })
-            commit('setItemList', result)
+            commit('setItemList', document.toJSON())
 
-            return Promise.resolve(result)
+            return document.toJSON()
           } catch (error) {
             commit('setErrors', { model: 'onCreate', hasError: true })
             return Promise.reject(error)
@@ -184,7 +172,7 @@ export default class {
             commit('replaceItem', result)
             commit('setErrors', { model: 'onFetchSingle' })
 
-            return Promise.resolve(formatResponse.success({ result }))
+            // return Promise.resolve(formatResponse.success({ result }))
           } catch (error) {
             commit('setErrors', { model: 'onFetchSingle', hasError: true })
             return Promise.reject(error)
@@ -192,20 +180,20 @@ export default class {
         },
 
         fetchFilters: ({ commit }, { params } = {}) => {
-          const filtersList = this.models.getFiltersByName(resource)
-          const filters = {}
+          // const filtersList = this.models.getFiltersByName(resource)
+          // const filters = {}
 
-          for (const filter of filtersList) {
-            if (!fields[filter]) {
-              throw new Error(`Filter "${filter}" doesn't exists.`)
-            }
+          // for (const filter of filtersList) {
+          //   if (!fields[filter]) {
+          //     throw new Error(`Filter "${filter}" doesn't exists.`)
+          //   }
 
-            filters[filter] = fields[filter]
-          }
+          //   filters[filter] = fields[filter]
+          // }
 
-          commit('setFilters', filters)
+          // commit('setFilters', filters)
 
-          return Promise.resolve(formatResponse.success({ fields: filters }))
+          // return Promise.resolve(formatResponse.success({ fields: filters }))
         },
 
         fetchList: async (
@@ -213,12 +201,18 @@ export default class {
           { filters = {}, increment, ordering = [], page = 1, limit, search } = {}
         ) => {
           try {
-            const response = await this.pouchDBService.find(resource)
+            const filtersHandler = new FiltersHandler(filters, collection.getFilters())
 
-            commit('setList', { results: response, increment })
-            commit('setErrors', { model: 'onFetchList' })
-            const relation = await this.pouchDBService.makeRelations()
-            return formatResponse.success({ results: response })
+            // console.log(filtersHandler.transformQuery())
+
+            const documents = await collection.find(filtersHandler.transformQuery()).limit(12).exec()
+            const formattedDocs = documents.map(document => document.toJSON())
+            console.log("🚀 ~ file: vuexOffline.js ~ line 210 ~ createStoreModule ~ formattedDocs", formattedDocs)
+
+            // commit('setList', { results: response, increment })
+            // commit('setErrors', { model: 'onFetchList' })
+            // const relation = await this.pouchDBService.makeRelations()
+            // return formatResponse.success({ results: response })
           } catch (error) {
             commit('setErrors', { model: 'onFetchList', hasError: true })
             return error
@@ -231,7 +225,7 @@ export default class {
 
             commit('removeItem', id)
             commit('setErrors', { model: 'onDestroy' })
-            return formatResponse.success()
+            // return formatResponse.success()
           } catch (error) {
             commit('setErrors', { model: 'onDestroy', hasError: true })
             return error

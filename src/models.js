@@ -69,22 +69,23 @@ export default class Models {
   }
 
   normalizeModel (model, name) {
-    const requiredKeys = ['schema', 'fields']
+    // const requiredKeys = ['schema', 'fields']
+    // const requiredKeys = []
     let normalizedModel = model
 
-    if (!isObject(model)) {
-      try {
-        normalizedModel = JSON.parse(model)
-      } catch (error) {
-        throw new Error(`Model "${name}" is not valid,`, error)
-      }
-    }
+    // if (!isObject(model)) {
+    //   try {
+    //     normalizedModel = JSON.parse(model)
+    //   } catch (error) {
+    //     throw new Error(`Model "${name}" is not valid,`, error)
+    //   }
+    // }
 
-    for (const key of requiredKeys) {
-      if (!normalizedModel[key]) {
-        throw new Error(`Please provide the key "${key}" inside your model "${name}".`)
-      }
-    }
+    // for (const key of requiredKeys) {
+    //   if (!normalizedModel[key]) {
+    //     throw new Error(`Please provide the key "${key}" inside your model "${name}".`)
+    //   }
+    // }
 
     return normalizedModel
   }

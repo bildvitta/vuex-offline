@@ -1,33 +1,33 @@
-import PouchDBSetup from './pouchDBSetup'
+import DatabaseSetup from './databaseSetup'
 import { uniq } from 'lodash'
 
 export default class {
-  constructor (pouchDB, options = {}) {
-    if (!(pouchDB instanceof PouchDBSetup)) {
-      throw new Error('Please provide an instance of PouchDBSetup.')
+  constructor (databaseSetup, options = {}) {
+    if (!(databaseSetup instanceof DatabaseSetup)) {
+      throw new Error('Please provide an instance of DatabaseSetup.')
     }
 
     this.databaseName = options.databaseName
     this.filters = options.filters
 
-    this.pouchDB = pouchDB
-    this.database = this.pouchDB.getDatabase(this.databaseName)
+    this.databaseSetup = databaseSetup
+    this.database = this.databaseSetup.getDatabase(this.databaseName)
 
-    if (this.filters) {
-      this.createIndex(this.filters)
-    }
+    // if (this.filters) {
+    //   this.createIndex(this.filters)
+    // }
   }
 
   createSchema (schema = []) {
     return this.database.setSchema(schema)
   }
 
-  createIndex (filters) {
-    const filtersToFlatArray = Object.values(filters).flat()
-    const nonDuplicatedFilters = uniq(filtersToFlatArray)
+  // createIndex (filters) {
+  //   const filtersToFlatArray = Object.values(filters).flat()
+  //   const nonDuplicatedFilters = uniq(filtersToFlatArray)
 
-    return this.database.createIndex({ index: { fields: nonDuplicatedFilters } })
-  }
+  //   return this.database.createIndex({ index: { fields: nonDuplicatedFilters } })
+  // }
 
   save (name, payload) {
     return this.database.rel.save(name, payload)
@@ -56,7 +56,7 @@ export default class {
     // const item = await this.find('posts')
     item.posts = ["075020FE-72F6-9050-8848-FA011633BA56"]
     await this.save('authors', item)
-    this.pouchDB.getPouchDBInstance().createIndex({index: { fields: ['data.authors', 'data.posts', '_id'] }})
+    this.databaseSetup.getPouchDBInstance().createIndex({index: { fields: ['data.authors', 'data.posts', '_id'] }})
     const teste = await this.database.rel.findHasMany('authors', 'posts', '075020FE-72F6-9050-8848-FA011633BA56')
     // return this.save('authors', {
     //   "name": "teste 2",
