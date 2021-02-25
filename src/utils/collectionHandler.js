@@ -3,10 +3,10 @@ export default class {
     this.collection = collection
   }
 
-  async getCount () {
-    const count = (await this.collection.find().exec()).length
+  async getCount (query) {
+    const list = await this.collection.find(query).exec()
 
-    return count
+    return list.length
   }
 
   getCustomFields () {

@@ -19,7 +19,8 @@ import {
 
 import {
   merge,
-  isEmpty
+  isEmpty,
+  cloneDeep
 } from 'lodash'
 
 export default class {
@@ -45,8 +46,10 @@ export default class {
       throw new Error('Resource name must be sended.')
     }
 
-    const idAttribute = options.idAttribute || this.idAttribute || 'id'
+    const idAttribute = options.idAttribute || this.idAttribute || 'uuid'
+    const perPage = options.perPage || 12
     const collection = this.collections[resource]
+
     const collectionHandler = new CollectionHandler(collection, this.database)
 
     const { filters: filtersList, search: searchList } = collectionHandler.getFiltersAndSearch()
@@ -58,9 +61,9 @@ export default class {
 
     const save = async ({ commit }, { payload, id, model } = {}) => {
       try {
-        const response = await this.pouchDBService.findOne(resource, id || payload.id)
+        const response = collection.findOne(id || payload.uuid)
 
-        if (!response) {
+        if (!response || (!id && !payload.uuid)) {
           throw new FormatError({
             status: {
               code: '404',
@@ -69,15 +72,15 @@ export default class {
           })
         }
 
-        const mergedResponse = merge(response, payload)
-        await this.pouchDBService.save(resource, mergedResponse)
+        const document = await response.update({
+          $set: { ...payload }
+        })
 
         commit('setErrors', { model })
-        commit('replaceItem', mergedResponse)
-        return Promise.resolve(mergedResponse)
+        commit('replaceItem', document.toJSON())
       } catch (error) {
         commit('setErrors', { model, hasError: true })
-        return Promise.reject(error)
+        return error
       }
     }
 
@@ -116,12 +119,13 @@ export default class {
         },
 
         setList (state, payload) {
-          const { results, increment } = payload
+          const { results, increment, count } = payload
           state.list = results || []
 
           increment ? state.list.push(...results) : state.list = results || []
 
-          // state.totalPages = Math.ceil(count / perPage)
+          state.totalPages = Math.ceil(count / perPage)
+          console.log(state.totalPages)
         },
 
         setItemList (state, payload = {}) {
@@ -149,7 +153,6 @@ export default class {
       actions: {
         create: async ({ commit }, { payload }) => {
           try {
-            console.log(payload)
             const document = await collection.insert({ uuid: comb(), ...payload })
 
             commit('setErrors', { model: 'onCreate' })
@@ -172,36 +175,40 @@ export default class {
         },
 
         fetchSingle: async ({ commit }, { form, id, params, url } = {}) => {
-          try {
-            const result = id ? await collection.findOne(id).exec() : null
-            
-            if (!id && form) {
-              console.log("🚀 ~ cai sim")
-              return {
-                data: {
-                  status: { code: 200 },
-
-                  fields: fieldsWithRelationOptions
-                }
+          if (!id && form) {
+            return {
+              data: {
+                status: { code: 200 },
+                fields: fieldsWithRelationOptions
               }
             }
+          }
 
-            // if (!result) {
-            //   throw new FormatError({
-            //     status: {
-            //       code: '404',
-            //       text: 'Not found!'
-            //     }
-            //   })
-            // }
+          try {
+            const result = await collection.findOne(id).exec()
 
-            commit('replaceItem', result)
+            if (!result) {
+              throw new FormatError({
+                status: {
+                  code: '404',
+                  text: 'Not found!'
+                }
+              })
+            }
+
+            // commit('replaceItem', result.toJSON())
             commit('setErrors', { model: 'onFetchSingle' })
 
-            return Promise.resolve(formatResponse.success({ result }))
+            return {
+              data: {
+                result: result.toJSON(),
+                fields: form ? fieldsWithRelationOptions : await relationsHandler.getFieldsWithRelationOptionsById(result),
+                status: { code: 200 }
+              }
+            }
           } catch (error) {
             commit('setErrors', { model: 'onFetchSingle', hasError: true })
-            return Promise.reject(error)
+            return error
           }
         },
 
@@ -230,12 +237,14 @@ export default class {
               searchList
             })
 
+            const skip = (page - 1) * (limit || perPage)
+
             const query = filtersHandler.transformQuery()
-            const documents = await collection.find(query).limit(limit).exec()
+            const count = await collectionHandler.getCount(query)
+            const documents = await collection.find(query).limit(limit || perPage).skip(skip).exec()
             const formattedDocuments = documents.map(document => document.toJSON())
 
-
-            commit('setList', { results: formattedDocuments, increment })
+            commit('setList', { results: formattedDocuments, increment, count })
             commit('setErrors', { model: 'onFetchList' })
 
             return {
@@ -253,12 +262,15 @@ export default class {
 
         destroy: async ({ commit }, { id } = {}) => {
           try {
-            await this.pouchDBService.delete(resource, id)
+            console.log(id, collection)
+            const document = await collection.find().exec()
+            // document.remove()
 
             commit('removeItem', id)
             commit('setErrors', { model: 'onDestroy' })
             // return formatResponse.success()
           } catch (error) {
+            console.log(error)
             commit('setErrors', { model: 'onDestroy', hasError: true })
             return error
           }
