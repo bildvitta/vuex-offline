@@ -4,8 +4,14 @@ import Models from './models'
 import FormatError from './formatError'
 import FormatResponse from './formatResponse'
 import Relations from './relations'
-import CollectionHandler from './collectionHandler'
 import FiltersHandler from './filtersHandler'
+
+import CollectionHandler from './utils/collectionHandler'
+import RelationsHandler from './utils/relationsHandler'
+
+import FetchFiltersService from './services/fetchFiltersService'
+import FetchListService from './services/fetchListService'
+
 
 import {
   comb
@@ -20,9 +26,18 @@ export default class {
   constructor (options = { databaseOptions: {} }) {
     this.idAttribute = options.idAttribute
     this.databaseOptions = options.databaseOptions
+    this.collectionsOptions = options.collections
     this.databaseName = this.databaseOptions.alias || this.databaseOptions.name
+  }
 
+  async initialize () {
     this.databaseSetup = new DatabaseSetup()
+
+    await this.databaseSetup.createDatabase(this.databaseOptions)
+    this.database = this.databaseSetup.getDatabase(this.databaseName)
+
+    await this.database.addCollections(this.collectionsOptions)
+    this.collections = this.database.collections
   }
 
   async createStoreModule (resource, options = { collectionOptions: {} }) {
@@ -30,18 +45,16 @@ export default class {
       throw new Error('Resource name must be sended.')
     }
 
-    await this.databaseSetup.createDatabase(this.databaseOptions)
-
-    const database = this.databaseSetup.getDatabase(this.databaseName)
     const idAttribute = options.idAttribute || this.idAttribute || 'id'
-    const collectionHandler = new CollectionHandler({
-      name: resource,
-      collectionOptions: options.collectionOptions,
-      database
-    })
+    const collection = this.collections[resource]
+    const collectionHandler = new CollectionHandler(collection, this.database)
 
-    await collectionHandler.addCollection()
-    const collection = collectionHandler.getCollection()
+    const { filters: filtersList, search: searchList } = collectionHandler.getFiltersAndSearch()
+    const fieldsList = collectionHandler.getOnlyFields()
+    const fieldsWithRelation = collectionHandler.getFieldsWithRelation()
+
+    const relationsHandler = new RelationsHandler(collection, this.collections)
+    const fieldsWithRelationOptions = await relationsHandler.getFieldsWithRelationOptions()
 
     const save = async ({ commit }, { payload, id, model } = {}) => {
       try {
@@ -136,6 +149,7 @@ export default class {
       actions: {
         create: async ({ commit }, { payload }) => {
           try {
+            console.log(payload)
             const document = await collection.insert({ uuid: comb(), ...payload })
 
             commit('setErrors', { model: 'onCreate' })
@@ -143,6 +157,7 @@ export default class {
 
             return document.toJSON()
           } catch (error) {
+            console.log(error, '>>> error')
             commit('setErrors', { model: 'onCreate', hasError: true })
             return Promise.reject(error)
           }
@@ -158,42 +173,49 @@ export default class {
 
         fetchSingle: async ({ commit }, { form, id, params, url } = {}) => {
           try {
-            const result = await this.pouchDBService.findOne(resource, id)
+            const result = id ? await collection.findOne(id).exec() : null
+            
+            if (!id && form) {
+              console.log("🚀 ~ cai sim")
+              return {
+                data: {
+                  status: { code: 200 },
 
-            if (!result) {
-              throw new FormatError({
-                status: {
-                  code: '404',
-                  text: 'Not found!'
+                  fields: fieldsWithRelationOptions
                 }
-              })
+              }
             }
+
+            // if (!result) {
+            //   throw new FormatError({
+            //     status: {
+            //       code: '404',
+            //       text: 'Not found!'
+            //     }
+            //   })
+            // }
 
             commit('replaceItem', result)
             commit('setErrors', { model: 'onFetchSingle' })
 
-            // return Promise.resolve(formatResponse.success({ result }))
+            return Promise.resolve(formatResponse.success({ result }))
           } catch (error) {
             commit('setErrors', { model: 'onFetchSingle', hasError: true })
             return Promise.reject(error)
           }
         },
 
-        fetchFilters: ({ commit }, { params } = {}) => {
-          // const filtersList = this.models.getFiltersByName(resource)
-          // const filters = {}
+        fetchFilters: async ({ commit }) => {
+          const fetchFiltersService = new FetchFiltersService(filtersList, fieldsList)
+          const filterFields = fetchFiltersService.getFilterFields()
+          const formattedFilterFields = await relationsHandler.getFieldsWithRelationOptions(filterFields)
 
-          // for (const filter of filtersList) {
-          //   if (!fields[filter]) {
-          //     throw new Error(`Filter "${filter}" doesn't exists.`)
-          //   }
+          commit('setFilters', formattedFilterFields)
 
-          //   filters[filter] = fields[filter]
-          // }
-
-          // commit('setFilters', filters)
-
-          // return Promise.resolve(formatResponse.success({ fields: filters }))
+          return {
+            fields: formattedFilterFields,
+            status: { code: 200 }
+          }
         },
 
         fetchList: async (
@@ -201,18 +223,28 @@ export default class {
           { filters = {}, increment, ordering = [], page = 1, limit, search } = {}
         ) => {
           try {
-            const filtersHandler = new FiltersHandler(filters, collection.getFilters())
+            const filtersHandler = new FiltersHandler({
+              receivedFilters: filters,
+              filtersList,
+              receivedSearch: search,
+              searchList
+            })
 
-            // console.log(filtersHandler.transformQuery())
+            const query = filtersHandler.transformQuery()
+            const documents = await collection.find(query).limit(limit).exec()
+            const formattedDocuments = documents.map(document => document.toJSON())
 
-            const documents = await collection.find(filtersHandler.transformQuery()).limit(12).exec()
-            const formattedDocs = documents.map(document => document.toJSON())
-            console.log("🚀 ~ file: vuexOffline.js ~ line 210 ~ createStoreModule ~ formattedDocs", formattedDocs)
 
-            // commit('setList', { results: response, increment })
-            // commit('setErrors', { model: 'onFetchList' })
-            // const relation = await this.pouchDBService.makeRelations()
-            // return formatResponse.success({ results: response })
+            commit('setList', { results: formattedDocuments, increment })
+            commit('setErrors', { model: 'onFetchList' })
+
+            return {
+              data: {
+                results: formattedDocuments,
+                fields: fieldsWithRelationOptions,
+                status: { code: 200 }
+              }
+            }
           } catch (error) {
             commit('setErrors', { model: 'onFetchList', hasError: true })
             return error

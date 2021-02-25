@@ -30,8 +30,16 @@ export default class {
             return self._getCustomFields(this)
           },
 
-          getFilters () {
-            return self._getFilters(this)
+          getFiltersAndSearch () {
+            return self._getFiltersAndSearch(this)
+          },
+
+          getOnlyFields () {
+            return self._getOnlyFields(this)
+          },
+
+          getFieldsWithRelation () {
+            return self._getFieldsWithRelation(this)
           }
         }
       }
@@ -53,8 +61,8 @@ export default class {
     const fields = this._getAllFields(collectionObject)
 
     for (const key in fields) {
-      if (fields[key].custom) {
-        customFields[key] = fields[key].custom
+      if (fields[key].props) {
+        customFields[key] = fields[key].props
       }
     }
 
@@ -65,16 +73,42 @@ export default class {
     return schema.jsonSchema.properties
   }
 
-  _getFilters(collectionObject) {
+  _getOnlyFields (collectionObject) {
     const customFields = this._getCustomFields(collectionObject)
-    const filters = []
+    const fields = {}
 
     for (const key in customFields) {
-      if (customFields[key].filter) {
-        filters.push(key)
+      fields[key] = customFields[key].field
+    }
+
+    return fields
+  }
+
+  _getFiltersAndSearch (collectionObject) {
+    const customFields = this._getCustomFields(collectionObject)
+    const object = {
+      filters: [],
+      search: []
+    }
+
+    for (const key in customFields) {
+      customFields[key].filter && object.filters.push(key)
+      customFields[key].search && object.search.push(key)
+    }
+
+    return object
+  }
+
+  _getFieldsWithRelation (collectionObject) {
+    const fields = {}
+    const allFields = this._getAllFields(collectionObject)
+
+    for (const key in allFields) {
+      if (allFields[key].ref) {
+        fields[key] = allFields[key]
       }
     }
 
-    return filters
+    return fields
   }
 }
