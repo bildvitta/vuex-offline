@@ -31,7 +31,7 @@ export default class {
     this.databaseName = this.databaseOptions.alias || this.databaseOptions.name
   }
 
-  async initialize () {
+  async createDatabase () {
     this.databaseSetup = new DatabaseSetup()
 
     await this.databaseSetup.createDatabase(this.databaseOptions)
@@ -125,7 +125,6 @@ export default class {
           increment ? state.list.push(...results) : state.list = results || []
 
           state.totalPages = Math.ceil(count / perPage)
-          console.log(state.totalPages)
         },
 
         setItemList (state, payload = {}) {
@@ -138,7 +137,7 @@ export default class {
 
         replaceItem (state, payload) {
           const index = state.list.findIndex(item => item[idAttribute] === payload[idAttribute])
-
+          
           ~index ? state.list.splice(index, 1, payload) : state.list.push(payload)
         },
 
@@ -160,7 +159,6 @@ export default class {
 
             return document.toJSON()
           } catch (error) {
-            console.log(error, '>>> error')
             commit('setErrors', { model: 'onCreate', hasError: true })
             return Promise.reject(error)
           }
@@ -196,7 +194,7 @@ export default class {
               })
             }
 
-            // commit('replaceItem', result.toJSON())
+            commit('replaceItem', result.toJSON())
             commit('setErrors', { model: 'onFetchSingle' })
 
             return {
@@ -241,6 +239,7 @@ export default class {
 
             const query = filtersHandler.transformQuery()
             const count = await collectionHandler.getCount(query)
+
             const documents = await collection.find(query).limit(limit || perPage).skip(skip).exec()
             const formattedDocuments = documents.map(document => document.toJSON())
 
@@ -255,6 +254,7 @@ export default class {
               }
             }
           } catch (error) {
+            console.log(error, '>> error')
             commit('setErrors', { model: 'onFetchList', hasError: true })
             return error
           }
@@ -262,15 +262,15 @@ export default class {
 
         destroy: async ({ commit }, { id } = {}) => {
           try {
-            console.log(id, collection)
-            const document = await collection.find().exec()
-            // document.remove()
+            const document = await collection.findOne(id).exec()
+            document.remove()
 
             commit('removeItem', id)
             commit('setErrors', { model: 'onDestroy' })
-            // return formatResponse.success()
+            return {
+              status: { code: 200 }
+            }
           } catch (error) {
-            console.log(error)
             commit('setErrors', { model: 'onDestroy', hasError: true })
             return error
           }

@@ -15,7 +15,8 @@ export default class {
     for (const key in this.fieldsWithRelation) {
       const documents = await document.populate(key)
       const options = []
-      const formattedDocuments = documents.map(document => {
+
+      const formattedDocuments = (documents || []).map(document => {
         const documentToJSON = document.toJSON()
 
         options.push({

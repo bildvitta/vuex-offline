@@ -1,3 +1,3 @@
-import VuexOffline from './src/vuexOffline'
+// import VuexOffline from './src/vuexOffline'
 
-export default VuexOffline
+// export default VuexOffline
