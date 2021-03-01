@@ -1,90 +1,58 @@
 import DatabaseSetup from './databaseSetup'
-import PouchDBService from './pouchDBService'
-import Models from './models'
-import FormatError from './formatError'
-import FormatResponse from './formatResponse'
-import Relations from './relations'
-import FiltersHandler from './filtersHandler'
-
+import Uuid from './utils/uuid'
 import CollectionHandler from './utils/collectionHandler'
+import FiltersHandler from './utils/filtersHandler'
+import FormatError from './utils/formatError'
 import RelationsHandler from './utils/relationsHandler'
 
-import FetchFiltersService from './services/fetchFiltersService'
-import FetchListService from './services/fetchListService'
+export default class VuexOffline {
+  constructor (databaseSetup, options = {}) {
+    if (!(databaseSetup instanceof DatabaseSetup)) {
+      throw new Error('Please, provide an instance of DatabaseSetup')
+    }
 
-
-import {
-  comb
-} from './helpers'
-
-import {
-  merge,
-  isEmpty,
-  cloneDeep
-} from 'lodash'
-
-export default class {
-  constructor (options = { databaseOptions: {} }) {
+    this.databaseSetup = databaseSetup
     this.idAttribute = options.idAttribute
-    this.databaseOptions = options.databaseOptions
-    this.collectionsOptions = options.collections
-    this.databaseName = this.databaseOptions.alias || this.databaseOptions.name
   }
 
-  async createDatabase () {
-    this.databaseSetup = new DatabaseSetup()
-
-    await this.databaseSetup.createDatabase(this.databaseOptions)
-    this.database = this.databaseSetup.getDatabase(this.databaseName)
-
-    await this.database.addCollections(this.collectionsOptions)
-    this.collections = this.database.collections
-  }
-
-  async createStoreModule (resource, options = { collectionOptions: {} }) {
-    if (!resource) {
-      throw new Error('Resource name must be sended.')
+  async createStoreModule (collectionName, options = {}) {
+    if (!collectionName) {
+      throw new Error('CollectionName name must be sended.')
     }
 
     const idAttribute = options.idAttribute || this.idAttribute || 'uuid'
     const perPage = options.perPage || 12
-    const collection = this.collections[resource]
+    const collection = this.databaseSetup.collections[collectionName]
 
-    const collectionHandler = new CollectionHandler(collection, this.database)
-
+    const collectionHandler = new CollectionHandler(collection)
     const { filters: filtersList, search: searchList } = collectionHandler.getFiltersAndSearch()
     const fieldsList = collectionHandler.getOnlyFields()
     const fieldsWithRelation = collectionHandler.getFieldsWithRelation()
 
-    const relationsHandler = new RelationsHandler(collection, this.collections)
+    const relationsHandler = new RelationsHandler(collection, this.databaseSetup.collections)
     const fieldsWithRelationOptions = await relationsHandler.getFieldsWithRelationOptions()
 
     const save = async ({ commit }, { payload, id, model } = {}) => {
       try {
-        const response = collection.findOne(id || payload.uuid)
+        const document = collection.findOne(id || payload.uuid)
 
-        if (!response || (!id && !payload.uuid)) {
+        if (!document || (!id && !payload.uuid)) {
           throw new FormatError({
-            status: {
-              code: '404',
-              text: 'not found!'
-            }
+            status: { code: '404', text: 'not found!' }
           })
         }
 
-        const document = await response.update({
-          $set: { ...payload }
-        })
+        const parsedDocument = await document.update({ $set: { ...payload } })
 
         commit('setErrors', { model })
-        commit('replaceItem', document.toJSON())
+        commit('replaceItem', parsedDocument.toJSON())
       } catch (error) {
         commit('setErrors', { model, hasError: true })
         return error
       }
     }
 
-    return {
+    const module = {
       namespaced: true,
 
       // states
@@ -152,12 +120,14 @@ export default class {
       actions: {
         create: async ({ commit }, { payload }) => {
           try {
-            const document = await collection.insert({ uuid: comb(), ...payload })
+            const uuid = new Uuid()
+            const document = await collection.insert({ uuid: uuid.create(), ...payload })
+            const parsedDocument = document.toJSON()
 
             commit('setErrors', { model: 'onCreate' })
-            commit('setItemList', document.toJSON())
+            commit('setItemList', parsedDocument)
 
-            return document.toJSON()
+            return parsedDocument
           } catch (error) {
             commit('setErrors', { model: 'onCreate', hasError: true })
             return Promise.reject(error)
@@ -183,23 +153,20 @@ export default class {
           }
 
           try {
-            const result = await collection.findOne(id).exec()
+            const document = await collection.findOne(id).exec()
 
-            if (!result) {
-              throw new FormatError({
-                status: {
-                  code: '404',
-                  text: 'Not found!'
-                }
-              })
+            if (!document) {
+              throw new FormatError({ status: { code: '404', text: 'Not found!' } })
             }
 
-            commit('replaceItem', result.toJSON())
+            const parsedDocument = document.toJSON()
+
+            commit('replaceItem', parsedDocument)
             commit('setErrors', { model: 'onFetchSingle' })
 
             return {
               data: {
-                result: result.toJSON(),
+                result: parsedDocument,
                 fields: form ? fieldsWithRelationOptions : await relationsHandler.getFieldsWithRelationOptionsById(result),
                 status: { code: 200 }
               }
@@ -211,8 +178,8 @@ export default class {
         },
 
         fetchFilters: async ({ commit }) => {
-          const fetchFiltersService = new FetchFiltersService(filtersList, fieldsList)
-          const filterFields = fetchFiltersService.getFilterFields()
+          const filtersHandler = new FiltersHandler({ filtersList, fieldsList })
+          const filterFields = filtersHandler.getFilterFields()
           const formattedFilterFields = await relationsHandler.getFieldsWithRelationOptions(filterFields)
 
           commit('setFilters', formattedFilterFields)
@@ -236,25 +203,22 @@ export default class {
             })
 
             const skip = (page - 1) * (limit || perPage)
-
             const query = filtersHandler.transformQuery()
             const count = await collectionHandler.getCount(query)
-
             const documents = await collection.find(query).limit(limit || perPage).skip(skip).exec()
-            const formattedDocuments = documents.map(document => document.toJSON())
+            const parsedDocuments = documents.map(document => document.toJSON())
 
-            commit('setList', { results: formattedDocuments, increment, count })
+            commit('setList', { results: parsedDocuments, increment, count })
             commit('setErrors', { model: 'onFetchList' })
 
             return {
               data: {
-                results: formattedDocuments,
+                results: parsedDocuments,
                 fields: fieldsWithRelationOptions,
                 status: { code: 200 }
               }
             }
           } catch (error) {
-            console.log(error, '>> error')
             commit('setErrors', { model: 'onFetchList', hasError: true })
             return error
           }
@@ -267,9 +231,8 @@ export default class {
 
             commit('removeItem', id)
             commit('setErrors', { model: 'onDestroy' })
-            return {
-              status: { code: 200 }
-            }
+
+            return { status: { code: 200 } }
           } catch (error) {
             commit('setErrors', { model: 'onDestroy', hasError: true })
             return error
@@ -277,5 +240,10 @@ export default class {
         }
       }
     }
+
+    Object.assign(module.actions, options.actions)
+    Object.assign(module.mutations, options.mutations)
+
+    return module
   }
 }

@@ -6,29 +6,31 @@ export default class {
     this.collectionHandler = new CollectionHandler(collection)
     this.fieldsWithRelation = this.collectionHandler.getFieldsWithRelation()
     this.collections = collections
-    this.collection = collection
   }
 
-  async getFieldsWithRelationOptionsById (document, id) {
+  setOptions (documents = [], key) {
+    const options = []
+
+    documents.forEach(document => {
+      const parsedDocument = document.toJSON()
+
+      options.push({
+        value: document.uuid,
+        label: document[this.fieldsWithRelation[key].props['refLabel']],
+        data: parsedDocument
+      })
+
+      return parsedDocument
+    })
+
+    return options
+  }
+
+  async getFieldsWithRelationOptionsById (document) {
     const fields = cloneDeep(this.collectionHandler.getOnlyFields())
 
     for (const key in this.fieldsWithRelation) {
-      const documents = await document.populate(key)
-      const options = []
-
-      const formattedDocuments = (documents || []).map(document => {
-        const documentToJSON = document.toJSON()
-
-        options.push({
-          value: document.uuid,
-          label: document[this.fieldsWithRelation[key].props['refLabel']],
-          data: documentToJSON
-        })
-
-        return documentToJSON
-      })
-
-      fields[key].options = options
+      fields[key].options = this.setOptions(await document.populate(key), key)
     }
 
     return fields
@@ -38,21 +40,7 @@ export default class {
     const fields = cloneDeep(externalFields || this.collectionHandler.getOnlyFields())
 
     for (const key in this.fieldsWithRelation) {
-      const documents = await this.collections[key].find().exec()
-      const options = []
-      const formattedDocuments = documents.map(document => {
-        const documentToJSON = document.toJSON()
-
-        options.push({
-          value: document.uuid,
-          label: document[this.fieldsWithRelation[key].props['refLabel']],
-          data: documentToJSON
-        })
-
-        return documentToJSON
-      })
-
-      fields[key].options = options
+      fields[key].options = this.setOptions(await this.collections[key].find().exec(), key)
     }
 
     return fields
