@@ -46,12 +46,6 @@ export default class {
     return plugins.forEach(plugin => this.addPlugin(plugin))
   }
 
-  // async createDatabase (options = {}) {
-  //   return createRxDatabase(options).then(response => {
-  //     this.databases[options.name] = response
-  //   })
-  // }
-
   async createDatabase () {
     try {
       this.database = await createRxDatabase(this.databaseOptions)
@@ -62,17 +56,6 @@ export default class {
       throw new Error('Error on create database', error)
     }
   }
-
-  // async createDatabase () {
-  //   try {
-  //     const database = await super.createDatabase(this.databaseOptions)
-
-  //     this.database = this.getDatabase(this.databaseName)
-  //     return database
-  //   } catch (error) {
-  //     throw new Error('Error on create database', error)
-  //   }
-  // }
 
   /**
    * Get the database
