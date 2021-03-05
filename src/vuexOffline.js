@@ -1,59 +1,59 @@
-import Model from './model'
-import PouchDBSetup from './pouchDBSetup'
-import PouchDBService from './pouchDBService'
-import Models from './models'
-import FormatError from './formatError'
-import FormatResponse from './formatResponse'
+import DatabaseSetup from './databaseSetup'
+import Uuid from './utils/uuid'
+import CollectionHandler from './utils/collectionHandler'
+import FiltersHandler from './utils/filtersHandler'
+import FormatError from './utils/formatError'
+import RelationsHandler from './utils/relationsHandler'
 
-import {
-  merge,
-  isEmpty
-} from 'lodash'
-
-export default class {
-  constructor (options = { pouchDBOptions: {} }, vueInstance) {
-    if (!Object.keys(options.pouchDBOptions.models).length) {
-      throw new Error('Please provide at leats one model.')
+export default class VuexOffline {
+  constructor (databaseSetup, options = {}) {
+    if (!(databaseSetup instanceof DatabaseSetup)) {
+      throw new Error('Please, provide an instance of DatabaseSetup')
     }
 
+    this.databaseSetup = databaseSetup
     this.idAttribute = options.idAttribute
-    this.pouchDBOptions = options.pouchDBOptions
-    this.databaseName = this.pouchDBOptions.alias || this.pouchDBOptions.name
-
-    // create models
-    this.models = new Models(this.pouchDBOptions.models)
-    this.normalizedModels = this.models.normalizedModel
-    this.schemas = this.models.getSchemas()
-
-    // initialize PouchDB
-    this.pouchDB = new PouchDBSetup()
-    this.pouchDB.createDatabase(this.pouchDBOptions.name, this.pouchDBOptions.alias)
-
-    // initialize DatabaseService
-    this.pouchDBService = new PouchDBService(this.pouchDB, {
-      databaseName: this.databaseName,
-      schemaName: 'posts'
-    })
-
-    this.pouchDBService.createSchema(this.schemas)
   }
 
-  createStoreModule (resource, options = {}) {
-    if (!resource) {
-      throw new Error('Resource name must be sended.')
+  async createStoreModule (collectionName, options = {}) {
+    if (!collectionName) {
+      throw new Error('CollectionName name must be sended.')
     }
 
-    const idAttribute = options.idAttribute || this.idAttribute || 'id'
+    const idAttribute = options.idAttribute || this.idAttribute || 'uuid'
+    const perPage = options.perPage || 12
+    const collection = this.databaseSetup.collections[collectionName]
 
-    const isFn = callback => typeof callback === 'function'
+    const collectionHandler = new CollectionHandler(collection)
+    const { filters: filtersList, search: searchList } = collectionHandler.getFiltersAndSearch()
+    const fieldsList = collectionHandler.getOnlyFields()
+    const fieldsWithRelation = collectionHandler.getFieldsWithRelation()
 
-    // format response
-    const formatResponse = new FormatResponse(this.normalizedModels, resource)
+    const relationsHandler = new RelationsHandler(collection, this.databaseSetup.collections)
+    const fieldsWithRelationOptions = await relationsHandler.getFieldsWithRelationOptions()
 
-    const fields = this.models.getFieldsByName(resource)
+    const save = async ({ commit }, { payload, id, model } = {}) => {
+      try {
+        const document = collection.findOne(id || payload.uuid)
+
+        if (!document || (!id && !payload.uuid)) {
+          throw new FormatError({
+            status: { code: '404', text: 'Not found' }
+          })
+        }
+
+        const parsedDocument = await document.update({ $set: { ...payload } })
+
+        commit('setErrors', { model })
+        commit('replaceItem', parsedDocument.toJSON())
+      } catch (error) {
+        commit('setErrors', { model, hasError: true })
+        return error
+      }
+    }
 
     const module = {
-      namespaced: options.namespaced || true,
+      namespaced: true,
 
       // states
       state: {
@@ -86,9 +86,9 @@ export default class {
           state.filters = payload
         },
 
-        setList (state, payload = {}) {
-          const { response, increment } = payload
-          const { results, count } = response.data
+        setList (state, payload) {
+          const { results, increment, count } = payload
+          state.list = results || []
 
           increment ? state.list.push(...results) : state.list = results || []
 
@@ -105,22 +105,29 @@ export default class {
 
         replaceItem (state, payload) {
           const index = state.list.findIndex(item => item[idAttribute] === payload[idAttribute])
-
+          
           ~index ? state.list.splice(index, 1, payload) : state.list.push(payload)
+        },
+
+        removeItem (state, id) {
+          const index = state.list.findIndex(item => item[idAttribute] === id)
+
+          ~index && state.list.splice(index, 1)
         }
       },
 
       // actions
       actions: {
-        create: async ({ commit }, payload = {}) => {
+        create: async ({ commit }, { payload }) => {
           try {
-            const response = await this.pouchDBService.save(resource, payload)
-            const result = { ...response, ...payload }
+            const uuid = new Uuid()
+            const document = await collection.insert({ uuid: uuid.create(), ...payload })
+            const parsedDocument = document.toJSON()
 
             commit('setErrors', { model: 'onCreate' })
-            commit('setItemList')
+            commit('setItemList', parsedDocument)
 
-            return Promise.resolve(result)
+            return parsedDocument
           } catch (error) {
             commit('setErrors', { model: 'onCreate', hasError: true })
             return Promise.reject(error)
@@ -128,75 +135,62 @@ export default class {
         },
 
         replace: async ({ commit }, { payload, id } = {}) => {
-          try {
-            const response = (await this.pouchDBService.find(resource, id || payload.id))[resource][0]
+          return save({ commit }, { payload, id, model: 'onReplace' })
+        },
 
-            if (!response) {
-              throw new FormatError({
-                status: {
-                  code: '404',
-                  text: 'not found!'
-                }
-              })
-            }
-
-            const mergedResponse = merge(response, payload)
-            await this.pouchDBService.save(resource, mergedResponse)
-
-            commit('setErrors', { model: 'onReplace' })
-            commit('replaceItem', mergedResponse)
-            return Promise.resolve(mergedResponse)
-          } catch (error) {
-            commit('setErrors', { model: 'onReplace', hasError: true })
-            return Promise.reject(error)
-          }
+        update: async ({ commit }, { payload, id } = {}) => {
+          return save({ commit }, { payload, id, model: 'onUpdate' })
         },
 
         fetchSingle: async ({ commit }, { form, id, params, url } = {}) => {
-          try {
-            const result = (await this.pouchDBService.find(resource, id))[resource][0]
+          if (!id && form) {
+            return {
+              data: {
+                status: { code: 200 },
+                fields: fieldsWithRelationOptions
+              }
+            }
+          }
 
-            if (!result) {
-              throw new FormatError({
-                status: {
-                  code: '404',
-                  text: 'Not found!'
-                }
-              })
+          try {
+            const document = await collection.findOne(id).exec()
+
+            if (!document) {
+              throw new FormatError({ status: { code: '404', text: 'Not found' } })
             }
 
-            commit('replaceItem', result)
+            const parsedDocument = document.toJSON()
+            const fields = form
+              ? fieldsWithRelationOptions
+              : await relationsHandler.getFieldsWithRelationOptionsById(result)
+
+            commit('replaceItem', parsedDocument)
             commit('setErrors', { model: 'onFetchSingle' })
 
-            // this.database.createIndex({index: { fields: ['data.content', '_id'] }})
-
-            // console.log(await this.pouchDBService.find(resource))
-            // const test = this.database.find({ selector: { 'data.content': 'DEU CERTOOOOO!!!2'}} ).then((data) => {
-            //   return this.database.rel.parseRelDocs(resource, data.docs);
-            // })
-
-            return Promise.resolve(formatResponse.success({ result }))
+            return {
+              data: {
+                fields,
+                result: parsedDocument,
+                status: { code: 200 }
+              }
+            }
           } catch (error) {
             commit('setErrors', { model: 'onFetchSingle', hasError: true })
-            return Promise.reject(error)
+            return error
           }
         },
 
-        fetchFilters: ({ commit }, { params } = {}) => {
-          const filtersList = this.models.getFiltersByName(resource)
-          const filters = {}
+        fetchFilters: async ({ commit }) => {
+          const filtersHandler = new FiltersHandler({ filtersList, fieldsList })
+          const filterFields = filtersHandler.getFilterFields()
+          const formattedFilterFields = await relationsHandler.getFieldsWithRelationOptions(filterFields)
 
-          for (const filter of filtersList) {
-            if (!fields[filter]) {
-              throw new Error(`Filter ${filter} doesn't exists.`)
-            }
+          commit('setFilters', formattedFilterFields)
 
-            filters[filter] = fields[filter]
+          return {
+            fields: formattedFilterFields,
+            status: { code: 200 }
           }
-
-          commit('setFilters', filters)
-
-          return Promise.resolve(formatResponse.success({ fields: filters }))
         },
 
         fetchList: async (
@@ -204,24 +198,54 @@ export default class {
           { filters = {}, increment, ordering = [], page = 1, limit, search } = {}
         ) => {
           try {
-            if (!isEmpty(filters)) {
-              this.pouchDBService.createIndex(['name', '_id'])
+            const filtersHandler = new FiltersHandler({
+              receivedFilters: filters,
+              filtersList,
+              receivedSearch: search,
+              searchList
+            })
+
+            const skip = (page - 1) * (limit || perPage)
+            const query = filtersHandler.transformQuery()
+            const count = await collectionHandler.getCount(query)
+            const documents = await collection.find(query).limit(limit || perPage).skip(skip).exec()
+            const parsedDocuments = documents.map(document => document.toJSON())
+
+            commit('setList', { results: parsedDocuments, increment, count })
+            commit('setErrors', { model: 'onFetchList' })
+
+            return {
+              data: {
+                results: parsedDocuments,
+                fields: fieldsWithRelationOptions,
+                status: { code: 200 }
+              }
             }
-
-            const response = isEmpty(filters)
-              ? await this.pouchDBService.find(resource)
-              : await this.pouchDBService.findQuery({ selector: { 'data.name': filters.name } })
-
-              console.log(await this.pouchDBService.findOne(resource, 'CA9ADBEA-23C5-851D-8C3C-4F9D0FFD903D'))
-
-            // console.log("🚀 ~ file: vuexOffline.js ~ line 212 ~ createStoreModule ~ response", response)
-
           } catch (error) {
-            return Promise.reject(error)
+            commit('setErrors', { model: 'onFetchList', hasError: true })
+            return error
+          }
+        },
+
+        destroy: async ({ commit }, { id } = {}) => {
+          try {
+            const document = await collection.findOne(id).exec()
+            document.remove()
+
+            commit('removeItem', id)
+            commit('setErrors', { model: 'onDestroy' })
+
+            return { status: { code: 200 } }
+          } catch (error) {
+            commit('setErrors', { model: 'onDestroy', hasError: true })
+            return error
           }
         }
       }
     }
+
+    Object.assign(module.actions, options.actions)
+    Object.assign(module.mutations, options.mutations)
 
     return module
   }
