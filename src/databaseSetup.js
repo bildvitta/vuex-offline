@@ -49,11 +49,10 @@ export default class {
   async createDatabase () {
     try {
       this.database = await createRxDatabase(this.databaseOptions)
-      console.log(this.database, '>>>> db')
 
       return this.database
     } catch (error) {
-      throw new Error('Error on create database', error)
+      throw new Error('Error creating database.', error)
     }
   }
 
@@ -66,7 +65,6 @@ export default class {
    * databaseSetup.getDatabase('myDatabase')
    */
   getDatabase (name) {
-    // console.dir(this.databases)
     return this.databases[name]
   }
 
@@ -90,13 +88,13 @@ export default class {
     const database = this.getDatabase(name)
 
     if (!database) {
-      throw new Error('Please provide a valid database to be deleted at function: "deleteDatabase".')
+      throw new Error('Please provide a valid database to be deleted.')
     }
 
     try {
       await database.destroy()
     } catch (error) {
-      return error
+      throw new Error('Error deleting database.', error)
     }
   }
 
@@ -106,7 +104,7 @@ export default class {
       await this.database.addCollections(collections || this.collectionsOptions)
       this.collections = this.database.collections
     } catch (error) {
-      throw new Error('Error on create collections', error)
+      throw new Error('Error creating collections.', error)
     }
   }
 }

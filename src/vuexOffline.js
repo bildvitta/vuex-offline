@@ -38,7 +38,7 @@ export default class VuexOffline {
 
         if (!document || (!id && !payload.uuid)) {
           throw new FormatError({
-            status: { code: '404', text: 'not found!' }
+            status: { code: '404', text: 'Not found' }
           })
         }
 
@@ -156,18 +156,21 @@ export default class VuexOffline {
             const document = await collection.findOne(id).exec()
 
             if (!document) {
-              throw new FormatError({ status: { code: '404', text: 'Not found!' } })
+              throw new FormatError({ status: { code: '404', text: 'Not found' } })
             }
 
             const parsedDocument = document.toJSON()
+            const fields = form
+              ? fieldsWithRelationOptions
+              : await relationsHandler.getFieldsWithRelationOptionsById(result)
 
             commit('replaceItem', parsedDocument)
             commit('setErrors', { model: 'onFetchSingle' })
 
             return {
               data: {
+                fields,
                 result: parsedDocument,
-                fields: form ? fieldsWithRelationOptions : await relationsHandler.getFieldsWithRelationOptionsById(result),
                 status: { code: 200 }
               }
             }
