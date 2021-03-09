@@ -1,4 +1,4 @@
-// TODO hora não está em uso.
+// TODO por hora não está em uso.
 
 import Ajv from 'ajv'
 import { requestIdleCallbackIfAvailable } from 'rxdb/dist/lib/util'
