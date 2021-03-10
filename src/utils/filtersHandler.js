@@ -10,6 +10,8 @@ export default class {
   getFilterFields () {
     const filters = {}
 
+    console.log(this.filtersList, '>>>>>>>>>>>>>>')
+
     for (const filter of this.filtersList) {
       if (!this.fieldsList[filter]) {
         throw new Error(`Filter "${filter}" doesn't exists.`)

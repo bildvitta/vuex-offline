@@ -26,7 +26,8 @@ export default class VuexOffline {
 
     const collectionHandler = new CollectionHandler(collection)
     const { filters: filtersList, search: searchList } = collectionHandler.getFiltersAndSearch()
-    const fieldsList = collectionHandler.getOnlyFields()
+    // const fieldsList = collectionHandler.getOnlyFields()
+    const fieldsList = collectionHandler.getFiltersFields()
     const fieldsWithRelation = collectionHandler.getFieldsWithRelation()
 
     const relationsHandler = new RelationsHandler(collection, this.databaseSetup.collections)
