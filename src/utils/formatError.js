@@ -4,7 +4,7 @@ export default class {
       response: {
         data: {
           errors,
-          status
+          status: { code: 400 }
         }
       }
     }
