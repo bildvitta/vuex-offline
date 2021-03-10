@@ -4,7 +4,7 @@ import CollectionHandler from './utils/collectionHandler'
 import FiltersHandler from './utils/filtersHandler'
 import FormatError from './utils/formatError'
 import RelationsHandler from './utils/relationsHandler'
-
+import ValidateCustomError from './utils/validateCustomError'
 export default class VuexOffline {
   constructor (databaseSetup, options = {}) {
     if (!(databaseSetup instanceof DatabaseSetup)) {
@@ -47,9 +47,16 @@ export default class VuexOffline {
 
         commit('setErrors', { model })
         commit('replaceItem', parsedDocument.toJSON())
+
+        return {
+          data: {
+            result: parsedDocument,
+            status: { code: 200 }
+          }
+        }
       } catch (error) {
         commit('setErrors', { model, hasError: true })
-        return error
+        throw new ValidateCustomError(error, collection)
       }
     }
 
@@ -128,10 +135,15 @@ export default class VuexOffline {
             commit('setErrors', { model: 'onCreate' })
             commit('setItemList', parsedDocument)
 
-            return parsedDocument
+            return {
+              data: {
+                metadata: { ...parsedDocument },
+                status: { code: 200 }
+              }
+            }
           } catch (error) {
             commit('setErrors', { model: 'onCreate', hasError: true })
-            return Promise.reject(error)
+            throw new ValidateCustomError(error, collection)
           }
         },
 
@@ -177,7 +189,7 @@ export default class VuexOffline {
             }
           } catch (error) {
             commit('setErrors', { model: 'onFetchSingle', hasError: true })
-            return error
+            throw error
           }
         },
 
@@ -224,13 +236,18 @@ export default class VuexOffline {
             }
           } catch (error) {
             commit('setErrors', { model: 'onFetchList', hasError: true })
-            return error
+            throw error
           }
         },
 
         destroy: async ({ commit }, { id } = {}) => {
           try {
             const document = await collection.findOne(id).exec()
+
+            if (!document) {
+              throw new FormatError()
+            }
+
             document.remove()
 
             commit('removeItem', id)
@@ -239,7 +256,7 @@ export default class VuexOffline {
             return { status: { code: 200 } }
           } catch (error) {
             commit('setErrors', { model: 'onDestroy', hasError: true })
-            return error
+            throw error
           }
         }
       }

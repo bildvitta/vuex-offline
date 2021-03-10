@@ -1,5 +1,4 @@
 import { createRxDatabase, addRxPlugin } from 'rxdb'
-import { RxDBAjvValidatePlugin } from 'rxdb/plugins/ajv-validate';
 
 /**
  * Class to abstract the PouchDB implementation.
@@ -8,8 +7,6 @@ import { RxDBAjvValidatePlugin } from 'rxdb/plugins/ajv-validate';
  */
 export default class {
   constructor (options = { databaseOptions: {} }) {
-    // this.databases = {}
-
     this.options = options
     this.databaseOptions = options.databaseOptions
     this.databaseName = this.databaseOptions.alias || this.databaseOptions.name
