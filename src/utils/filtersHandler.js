@@ -1,3 +1,5 @@
+import ParseHandler from './parseHandler'
+
 export default class {
   constructor({ receivedFilters, filtersList, receivedSearch = '', searchList, fieldsList }) {
     this.fieldsList = fieldsList
@@ -5,6 +7,7 @@ export default class {
     this.receivedFilters = receivedFilters
     this.receivedSearch = receivedSearch
     this.searchList = searchList
+    this.parseHandler = new ParseHandler()
   }
 
   getFilterFields () {
@@ -37,6 +40,19 @@ export default class {
     }
   }
 
+  _setDefaultValueToQueryOperator (queryOperator, value) {
+    const defaultValues = {
+      $all: [value],
+      $eq: this.parseHandler.parseBoolean(value)
+    }
+
+    if (!(queryOperator in defaultValues)) {
+      return value
+    }
+
+    return defaultValues[queryOperator]
+  }
+
   transformQuery () {
     const transformedQuery = {}
 
@@ -49,7 +65,11 @@ export default class {
       if (this.receivedFilters[item]) {
         transformedQuery[filterField.queryOrigin || item] = transformedQueryObject.transform(
           filterField.queryOperator
-            ? { [filterField.queryOperator]: this.receivedFilters[item] }
+            ? {
+              [filterField.queryOperator]: this._setDefaultValueToQueryOperator(
+                filterField.queryOperator, this.receivedFilters[item]
+              )
+            }
             : { $regex: `.*${this.receivedSearch || this.receivedFilters[item]}.*` }
         ).getTransformed()
 

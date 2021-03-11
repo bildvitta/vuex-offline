@@ -1,3 +1,5 @@
+import { formatISO } from 'date-fns'
+
 import DatabaseSetup from './databaseSetup'
 import Uuid from './utils/uuid'
 import CollectionHandler from './utils/collectionHandler'
@@ -26,9 +28,9 @@ export default class VuexOffline {
 
     const collectionHandler = new CollectionHandler(collection)
     const { filters: filtersList, search: searchList } = collectionHandler.getFiltersAndSearch()
-    // const fieldsList = collectionHandler.getOnlyFields()
     const fieldsList = collectionHandler.getFiltersFields()
     const fieldsWithRelation = collectionHandler.getFieldsWithRelation()
+    const allFields = collectionHandler.getAllFields()
 
     const relationsHandler = new RelationsHandler(collection, this.databaseSetup.collections)
     const fieldsWithRelationOptions = await relationsHandler.getFieldsWithRelationOptions()
@@ -41,6 +43,10 @@ export default class VuexOffline {
           throw new FormatError({
             status: { code: '404', text: 'Not found' }
           })
+        }
+
+        if (allFields.updatedAt) {
+          payload.updatedAt = formatISO(new Date())
         }
 
         const parsedDocument = await document.update({ $set: { ...payload } })
@@ -131,14 +137,12 @@ export default class VuexOffline {
             const uuid = new Uuid()
             const documentToBeInserted = { uuid: uuid.create(), ...payload }
 
-            if (collectionHandler.getAllFields().createdAt) {
-              documentToBeInserted.createdAt = new Date().toISOString()
+            if (allFields.createdAt) {
+              documentToBeInserted.createdAt = formatISO(new Date())
             }
 
             const document = await collection.insert(documentToBeInserted)
             const parsedDocument = document.toJSON()
-
-            console.log(parsedDocument, '>>>> parsedDocument')
 
             commit('setErrors', { model: 'onCreate' })
             commit('setItemList', parsedDocument)
