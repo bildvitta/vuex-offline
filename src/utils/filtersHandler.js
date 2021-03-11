@@ -10,8 +10,6 @@ export default class {
   getFilterFields () {
     const filters = {}
 
-    console.log(this.filtersList, '>>>>>>>>>>>>>>')
-
     for (const filter of this.filtersList) {
       if (!this.fieldsList[filter]) {
         throw new Error(`Filter "${filter}" doesn't exists.`)
@@ -23,18 +21,45 @@ export default class {
     return filters
   }
 
+  _transformedQueryObject (originalObject) {
+    const object = originalObject || {}
+
+    return {
+      transform (newObject) {
+        Object.assign(object, newObject)
+
+        return this
+      },
+
+      getTransformed () {
+        return object
+      }
+    }
+  }
+
   transformQuery () {
     const transformedQuery = {}
 
     for (const item of this.filtersList) {
-      if (this.receivedFilters[item]) {
-        transformedQuery[item] = { $regex: `.*${this.receivedFilters[item]}.*` }
-      }
-    }
+      const filterField = this.fieldsList[item]
+      const transformedQueryObject = this._transformedQueryObject(
+        transformedQuery[filterField.queryOrigin || item]
+      )
 
-    for (const item of this.searchList) {
-      if (this.receivedSearch) {
-        transformedQuery[item] = { $regex: `.*${this.receivedSearch}.*` }
+      if (this.receivedFilters[item]) {
+        transformedQuery[filterField.queryOrigin || item] = transformedQueryObject.transform(
+          filterField.queryOperator
+            ? { [filterField.queryOperator]: this.receivedFilters[item] }
+            : { $regex: `.*${this.receivedSearch || this.receivedFilters[item]}.*` }
+        ).getTransformed()
+
+        continue
+      }
+
+      if (this.receivedSearch && filterField.search) {
+        transformedQuery[filterField.queryOrigin || item] = transformedQueryObject.transform(
+          { $regex: `.*${this.receivedSearch}.` }
+        ).getTransformed()
       }
     }
 

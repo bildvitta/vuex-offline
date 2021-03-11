@@ -129,8 +129,16 @@ export default class VuexOffline {
         create: async ({ commit }, { payload }) => {
           try {
             const uuid = new Uuid()
-            const document = await collection.insert({ uuid: uuid.create(), ...payload })
+            const documentToBeInserted = { uuid: uuid.create(), ...payload }
+
+            if (collectionHandler.getAllFields().createdAt) {
+              documentToBeInserted.createdAt = new Date().toISOString()
+            }
+
+            const document = await collection.insert(documentToBeInserted)
             const parsedDocument = document.toJSON()
+
+            console.log(parsedDocument, '>>>> parsedDocument')
 
             commit('setErrors', { model: 'onCreate' })
             commit('setItemList', parsedDocument)
@@ -215,7 +223,8 @@ export default class VuexOffline {
               receivedFilters: filters,
               filtersList,
               receivedSearch: search,
-              searchList
+              searchList,
+              fieldsList
             })
 
             const skip = (page - 1) * (limit || perPage)

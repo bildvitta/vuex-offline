@@ -53,23 +53,22 @@ export default class {
     const fields = {}
 
     for (const key in customFields) {
-      fields[key] = customFields[key].field
+      if (customFields[key].field) {
+        fields[key] = customFields[key].field
+      }
     }
 
     return fields
   }
 
   getFiltersAndSearch () {
-    // const customFields = this.getCustomFields()
     const customFields = this.getFiltersFields()
-    // console.log("🚀 custommm", customFields)
     const object = {
       filters: [],
       search: []
     }
 
     for (const key in customFields) {
-      console.log(customFields[key], '>>> oush')
       object.filters.push(key)
       customFields[key].search && object.search.push(key)
     }
