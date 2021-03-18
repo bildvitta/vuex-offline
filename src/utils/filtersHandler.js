@@ -24,22 +24,6 @@ export default class {
     return filters
   }
 
-  _transformedQueryObject (originalObject) {
-    const object = originalObject || {}
-
-    return {
-      transform (newObject) {
-        Object.assign(object, newObject)
-
-        return this
-      },
-
-      getTransformed () {
-        return object
-      }
-    }
-  }
-
   _setDefaultValueToQueryOperator (queryOperator, value) {
     const defaultValues = {
       $all: [value],
@@ -58,28 +42,25 @@ export default class {
 
     for (const item of this.filtersList) {
       const filterField = this.fieldsList[item]
-      const transformedQueryObject = this._transformedQueryObject(
-        transformedQuery[filterField.queryOrigin || item]
-      )
+      transformedQuery[filterField.queryOrigin || item] = transformedQuery[filterField.queryOrigin || item] || {}
 
       if (this.receivedFilters[item]) {
-        transformedQuery[filterField.queryOrigin || item] = transformedQueryObject.transform(
+        Object.assign(
+          transformedQuery[filterField.queryOrigin || item],
           filterField.queryOperator
             ? {
               [filterField.queryOperator]: this._setDefaultValueToQueryOperator(
                 filterField.queryOperator, this.receivedFilters[item]
               )
             }
-            : { $regex: `.*${this.receivedSearch || this.receivedFilters[item]}.*` }
-        ).getTransformed()
+            : { $regex: `.*${this.receivedFilters[item]}.*` }
+          )
 
         continue
       }
 
       if (this.receivedSearch && filterField.search) {
-        transformedQuery[filterField.queryOrigin || item] = transformedQueryObject.transform(
-          { $regex: `.*${this.receivedSearch}.` }
-        ).getTransformed()
+        Object.assign(transformedQuery[filterField.queryOrigin || item], { $regex: `.*${this.receivedSearch}.` })
       }
     }
 

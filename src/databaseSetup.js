@@ -98,9 +98,12 @@ export default class {
   async createCollections (collections) {
     try {
       // addCollections from rxdb
-      await this.database.addCollections(collections || this.collectionsOptions)
+      const collection = await this.database.addCollections(collections || this.collectionsOptions)
       this.collections = this.database.collections
+
+      return collection
     } catch (error) {
+      console.log(error)
       throw new Error('Error creating collections.', error)
     }
   }

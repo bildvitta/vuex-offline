@@ -1,12 +1,13 @@
 import { formatISO } from 'date-fns'
 
 import DatabaseSetup from './databaseSetup'
-import Uuid from './utils/uuid'
 import CollectionHandler from './utils/collectionHandler'
 import FiltersHandler from './utils/filtersHandler'
 import FormatError from './utils/formatError'
 import RelationsHandler from './utils/relationsHandler'
+import Uuid from './utils/uuid'
 import ValidateCustomError from './utils/validateCustomError'
+
 export default class VuexOffline {
   constructor (databaseSetup, options = {}) {
     if (!(databaseSetup instanceof DatabaseSetup)) {
@@ -181,7 +182,9 @@ export default class VuexOffline {
             const document = await collection.findOne(id).exec()
 
             if (!document) {
-              throw new FormatError({ status: { code: '404', text: 'Not found' } })
+              throw new FormatError({
+                status: { code: '404', text: 'Not found' }
+              })
             }
 
             const parsedDocument = document.toJSON()
@@ -258,7 +261,9 @@ export default class VuexOffline {
             const document = await collection.findOne(id).exec()
 
             if (!document) {
-              throw new FormatError()
+              throw new FormatError({
+                status: { code: 404, text: 'Not found' }
+              })
             }
 
             document.remove()
