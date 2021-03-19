@@ -103,7 +103,6 @@ export default class {
 
       return collection
     } catch (error) {
-      console.log(error)
       throw new Error('Error creating collections.', error)
     }
   }
