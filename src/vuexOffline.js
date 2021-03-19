@@ -1,10 +1,13 @@
+import { formatISO } from 'date-fns'
+
 import DatabaseSetup from './databaseSetup'
-import Uuid from './utils/uuid'
 import CollectionHandler from './utils/collectionHandler'
 import FiltersHandler from './utils/filtersHandler'
 import FormatError from './utils/formatError'
 import RelationsHandler from './utils/relationsHandler'
+import Uuid from './utils/uuid'
 import ValidateCustomError from './utils/validateCustomError'
+
 export default class VuexOffline {
   constructor (databaseSetup, options = {}) {
     if (!(databaseSetup instanceof DatabaseSetup)) {
@@ -26,8 +29,9 @@ export default class VuexOffline {
 
     const collectionHandler = new CollectionHandler(collection)
     const { filters: filtersList, search: searchList } = collectionHandler.getFiltersAndSearch()
-    const fieldsList = collectionHandler.getOnlyFields()
+    const fieldsList = collectionHandler.getFiltersFields()
     const fieldsWithRelation = collectionHandler.getFieldsWithRelation()
+    const allFields = collectionHandler.getAllFields()
 
     const relationsHandler = new RelationsHandler(collection, this.databaseSetup.collections)
     const fieldsWithRelationOptions = await relationsHandler.getFieldsWithRelationOptions()
@@ -40,6 +44,10 @@ export default class VuexOffline {
           throw new FormatError({
             status: { code: '404', text: 'Not found' }
           })
+        }
+
+        if (allFields.updatedAt) {
+          payload.updatedAt = formatISO(new Date())
         }
 
         const parsedDocument = await document.update({ $set: { ...payload } })
@@ -128,7 +136,13 @@ export default class VuexOffline {
         create: async ({ commit }, { payload }) => {
           try {
             const uuid = new Uuid()
-            const document = await collection.insert({ uuid: uuid.create(), ...payload })
+            const documentToBeInserted = { uuid: uuid.create(), ...payload }
+
+            if (allFields.createdAt) {
+              documentToBeInserted.createdAt = formatISO(new Date())
+            }
+
+            const document = await collection.insert(documentToBeInserted)
             const parsedDocument = document.toJSON()
 
             commit('setErrors', { model: 'onCreate' })
@@ -168,7 +182,9 @@ export default class VuexOffline {
             const document = await collection.findOne(id).exec()
 
             if (!document) {
-              throw new FormatError({ status: { code: '404', text: 'Not found' } })
+              throw new FormatError({
+                status: { code: '404', text: 'Not found' }
+              })
             }
 
             const parsedDocument = document.toJSON()
@@ -214,7 +230,8 @@ export default class VuexOffline {
               receivedFilters: filters,
               filtersList,
               receivedSearch: search,
-              searchList
+              searchList,
+              fieldsList
             })
 
             const skip = (page - 1) * (limit || perPage)
@@ -244,7 +261,9 @@ export default class VuexOffline {
             const document = await collection.findOne(id).exec()
 
             if (!document) {
-              throw new FormatError()
+              throw new FormatError({
+                status: { code: 404, text: 'Not found' }
+              })
             }
 
             document.remove()

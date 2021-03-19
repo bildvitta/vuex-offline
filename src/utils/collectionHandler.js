@@ -26,26 +26,50 @@ export default class {
     return this.collection.schema.jsonSchema.properties
   }
 
+  getFiltersFields () {
+    const filtersFields = {}
+    const customFields = this.getCustomFields()
+
+    for (const key in customFields) {
+      const filters = customFields[key].filter
+
+      if (!filters) continue
+
+      if (typeof filters === 'boolean') {
+        filtersFields[key] = customFields[key].field
+        continue
+      }
+
+      for (const filtersKey in filters) {
+        filtersFields[filtersKey] = filters[filtersKey]
+      }
+    }
+
+    return filtersFields
+  }
+
   getOnlyFields () {
     const customFields = this.getCustomFields()
     const fields = {}
 
     for (const key in customFields) {
-      fields[key] = customFields[key].field
+      if (customFields[key].field) {
+        fields[key] = customFields[key].field
+      }
     }
 
     return fields
   }
 
   getFiltersAndSearch () {
-    const customFields = this.getCustomFields()
+    const customFields = this.getFiltersFields()
     const object = {
       filters: [],
       search: []
     }
 
     for (const key in customFields) {
-      customFields[key].filter && object.filters.push(key)
+      object.filters.push(key)
       customFields[key].search && object.search.push(key)
     }
 
