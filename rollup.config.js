@@ -8,11 +8,11 @@ const options = {
 }
 
 export default {
-  input: 'src/vuexOffline.js',
+  input: './index.js',
 
   output: [
-    { file: 'dist/vuexOffline.js', ...options },
-    { file: 'dist/vuexOffline.min.js', sourcemap: true, ...options }
+    { file: 'dist/index.js', ...options },
+    { file: 'dist/index.min.js', sourcemap: true, ...options }
   ],
 
   plugins: [
