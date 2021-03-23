@@ -7,6 +7,7 @@ import FormatError from './utils/formatError'
 import RelationsHandler from './utils/relationsHandler'
 import Uuid from './utils/uuid'
 import ValidateCustomError from './utils/validateCustomError'
+import Nested from './utils/nested'
 
 export default class VuexOffline {
   constructor (databaseSetup, options = {}) {
@@ -36,6 +37,8 @@ export default class VuexOffline {
     const relationsHandler = new RelationsHandler(collection, this.databaseSetup.collections)
     const fieldsWithRelationOptions = await relationsHandler.getFieldsWithRelationOptions()
 
+    const nested = new Nested()
+
     const save = async ({ commit }, { payload, id, model } = {}) => {
       try {
         const document = collection.findOne(id || payload.uuid)
@@ -49,6 +52,12 @@ export default class VuexOffline {
         if (allFields.updatedAt) {
           payload.updatedAt = formatISO(new Date())
         }
+
+        collectionHandler.getNestedFields(nestedField => {
+          payload[nestedField.field.name] = nested.handler(
+            payload[nestedField.field.name]
+          )
+        })
 
         const parsedDocument = await document.update({ $set: { ...payload } })
 
@@ -137,10 +146,21 @@ export default class VuexOffline {
           try {
             const uuid = new Uuid()
             const documentToBeInserted = { uuid: uuid.create(), ...payload }
+            const dateNow = formatISO(new Date())
 
             if (allFields.createdAt) {
-              documentToBeInserted.createdAt = formatISO(new Date())
+              documentToBeInserted.createdAt = dateNow
             }
+
+            if (allFields.updatedAt) {
+              documentToBeInserted.updatedAt = dateNow
+            }
+
+            collectionHandler.getNestedFields(nestedField => {
+              documentToBeInserted[nestedField.field.name] = nested.handler(
+                documentToBeInserted[nestedField.field.name]
+              )
+            })
 
             const document = await collection.insert(documentToBeInserted)
             const parsedDocument = document.toJSON()

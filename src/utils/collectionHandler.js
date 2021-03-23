@@ -9,13 +9,14 @@ export default class {
     return list.length
   }
 
-  getCustomFields () {
+  getCustomFields (callback = function () {}) {
     const customFields = {}
     const fields = this.getAllFields()
 
     for (const key in fields) {
       if (fields[key].props) {
         customFields[key] = fields[key].props
+        callback(fields[key].props)
       }
     }
 
@@ -74,6 +75,21 @@ export default class {
     }
 
     return object
+  }
+
+  getNestedFields (callback = function () {}) {
+    const nestedFields = {}
+
+    this.getCustomFields(custom => {
+      const { field } = custom
+
+      if (field && field.type === 'nested') {
+        nestedFields[field.name] = custom
+        callback(custom)
+      }
+    })
+
+    return nestedFields
   }
 
   getFieldsWithRelation () {
