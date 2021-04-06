@@ -210,7 +210,7 @@ export default class VuexOffline {
             const parsedDocument = document.toJSON()
             const fields = form
               ? fieldsWithRelationOptions
-              : await relationsHandler.getFieldsWithRelationOptionsById(result)
+              : await relationsHandler.getFieldsWithRelationOptionsById(parsedDocument)
 
             commit('replaceItem', parsedDocument)
             commit('setErrors', { model: 'onFetchSingle' })

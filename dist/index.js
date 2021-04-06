@@ -1393,7 +1393,7 @@
 
                                 case 15:
                                   _context5.next = 17;
-                                  return relationsHandler.getFieldsWithRelationOptionsById(result);
+                                  return relationsHandler.getFieldsWithRelationOptionsById(parsedDocument);
 
                                 case 17:
                                   _context5.t0 = _context5.sent;
