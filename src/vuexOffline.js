@@ -39,6 +39,9 @@ export default class VuexOffline {
 
     const nested = new Nested()
 
+    console.log(this.databaseSetup.collections, '>>>')
+    window.collections = this.databaseSetup.collections
+
     const save = async ({ commit }, { payload, id, model } = {}) => {
       try {
         const document = collection.findOne(id || payload.uuid)
@@ -200,6 +203,13 @@ export default class VuexOffline {
 
           try {
             const document = await collection.findOne(id).exec()
+            // const test = await collection.findOne(id)
+
+            // await test.update({ $set: { authors: {} } })
+
+
+
+            console.log(await document.populate('authors'))
 
             if (!document) {
               throw new FormatError({

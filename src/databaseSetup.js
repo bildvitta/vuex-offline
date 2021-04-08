@@ -96,13 +96,87 @@ export default class {
   }
 
   async createCollections (collections) {
+    const relationshipSchema = {
+      type: "object",
+      version: 0,
+      properties: {
+        uuid: {
+          type: "string",
+          primary: true
+        },
+        parents: {
+          ref: 'parents',
+          type: 'string'
+        },
+        children: {
+          ref: 'children',
+          type: 'string'
+        }
+      }
+    }
+    
+    const parentSchema = {
+      type: "object",
+      version: 0,
+      properties: {
+        uuid: {
+          type: "string",
+          primary: true
+        },
+        title: {
+          type: "string"
+        },
+        children: {
+          type: 'array',
+          ref: 'relationship',
+          items: {
+            type: 'string'
+          }
+        }
+      }
+    }
+    
+    const childSchema = {
+      type: "object",
+      version: 0,
+      properties: {
+        uuid: {
+          type: "string",
+          primary: true
+        },
+        title: {
+          type: "string"
+        },
+        children: {
+          type: 'array',
+          ref: 'relationship',
+          items: {
+            type: 'string'
+          }
+        }
+      }
+    }
+
     try {
       // addCollections from rxdb
-      const collection = await this.database.addCollections(collections || this.collectionsOptions)
+      // const collection = await this.database.addCollections(collections || this.collectionsOptions)
+      const collection = await this.database.addCollections({
+        ...this.collectionsOptions,
+        parents: {
+          schema: parentSchema 
+        },
+        children: {
+          schema: childSchema
+        },
+        relationships: {
+          schema: relationshipSchema 
+        }
+      })
       this.collections = this.database.collections
 
       return collection
     } catch (error) {
+      console.log(error)
       throw new Error('Error creating collections.', error)
     }
   }
