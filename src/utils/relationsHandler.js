@@ -30,7 +30,9 @@ export default class {
     const fields = cloneDeep(this.collectionHandler.getOnlyFields())
 
     for (const key in this.fieldsWithRelation) {
-      fields[key].options = this.setOptions(await document.populate(key), key)
+      fields[key].options = this.setOptions(
+        await document.populate(this.fieldsWithRelation[key].ref), key
+      )
     }
 
     return fields
@@ -40,7 +42,9 @@ export default class {
     const fields = cloneDeep(externalFields || this.collectionHandler.getOnlyFields())
 
     for (const key in this.fieldsWithRelation) {
-      fields[key].options = this.setOptions(await this.collections[key].find().exec(), key)
+      fields[key].options = this.setOptions(
+        await this.collections[this.fieldsWithRelation[key].ref].find().exec(), key
+      )
     }
 
     return fields
