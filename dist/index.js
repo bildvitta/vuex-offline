@@ -750,7 +750,7 @@
                   key = _context.t1.value;
                   _context.t2 = this;
                   _context.next = 7;
-                  return document.populate(key);
+                  return document.populate(this.fieldsWithRelation[key].ref);
 
                 case 7:
                   _context.t3 = _context.sent;
@@ -797,7 +797,7 @@
                   key = _context2.t1.value;
                   _context2.t2 = this;
                   _context2.next = 7;
-                  return this.collections[key].find().exec();
+                  return this.collections[this.fieldsWithRelation[key].ref].find().exec();
 
                 case 7:
                   _context2.t3 = _context2.sent;
