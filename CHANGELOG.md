@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 1.0.2 - 2021-04-09
 
-### Changed
+### Fixed
 - getFieldsWithRelationOptionsById -> fields[key].options = this.setOptions(await document.populate(key), key)
 - getFieldsWithRelationOptions -> fields[key].options = this.setOptions(await this.collections[key].find().exec(), key)
 
