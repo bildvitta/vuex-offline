@@ -96,7 +96,7 @@ export default class {
   }
 
   async createCollections (collections) {
-    const relationshipSchema = {
+    const usersPosts = {
       type: "object",
       version: 0,
       properties: {
@@ -104,18 +104,21 @@ export default class {
           type: "string",
           primary: true
         },
-        parents: {
-          ref: 'parents',
+        status: {
+          type: 'boolean'
+        },
+        users: {
+          ref: 'users',
           type: 'string'
         },
-        children: {
-          ref: 'children',
+        posts: {
+          ref: 'posts',
           type: 'string'
         }
       }
     }
-    
-    const parentSchema = {
+
+    const users = {
       type: "object",
       version: 0,
       properties: {
@@ -126,17 +129,17 @@ export default class {
         title: {
           type: "string"
         },
-        children: {
+        posts: {
           type: 'array',
-          ref: 'relationship',
+          ref: 'users_posts',
           items: {
             type: 'string'
           }
         }
       }
     }
-    
-    const childSchema = {
+
+    const posts = {
       type: "object",
       version: 0,
       properties: {
@@ -147,9 +150,10 @@ export default class {
         title: {
           type: "string"
         },
-        children: {
+        users: {
           type: 'array',
-          ref: 'relationship',
+          manyToMany: "users",
+          ref: 'users_posts',
           items: {
             type: 'string'
           }
@@ -162,14 +166,14 @@ export default class {
       // const collection = await this.database.addCollections(collections || this.collectionsOptions)
       const collection = await this.database.addCollections({
         ...this.collectionsOptions,
-        parents: {
-          schema: parentSchema 
+        users: {
+          schema: users 
         },
-        children: {
-          schema: childSchema
+        posts: {
+          schema: posts
         },
-        relationships: {
-          schema: relationshipSchema 
+        users_posts: {
+          schema: usersPosts
         }
       })
       this.collections = this.database.collections
