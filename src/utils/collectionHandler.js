@@ -16,7 +16,7 @@ export default class {
     for (const key in fields) {
       if (fields[key].props) {
         customFields[key] = fields[key].props
-        callback(fields[key].props)
+        callback(fields[key].props, key)
       }
     }
 
@@ -101,6 +101,19 @@ export default class {
         fields[key] = allFields[key]
       }
     }
+
+    return fields
+  }
+
+  getCustomManyToManyFields (callback = function () {}) {
+    const fields = {}
+
+    this.getCustomFields((custom, key) => {
+      if (custom.manyToMany) {
+        fields[key] = custom
+        callback(custom)
+      }
+    })
 
     return fields
   }

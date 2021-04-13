@@ -28,11 +28,16 @@ export default class VuexOffline {
     const perPage = options.perPage || 12
     const collection = this.databaseSetup.collections[collectionName]
 
+    // TODO remover
+    window.collections = this.databaseSetup.collections
+
     const collectionHandler = new CollectionHandler(collection)
     const { filters: filtersList, search: searchList } = collectionHandler.getFiltersAndSearch()
     const fieldsList = collectionHandler.getFiltersFields()
     const fieldsWithRelation = collectionHandler.getFieldsWithRelation()
     const allFields = collectionHandler.getAllFields()
+    collectionHandler.getCustomManyToManyFields()
+    console.log('ué')
 
     const relationsHandler = new RelationsHandler(collection, this.databaseSetup.collections)
     const fieldsWithRelationOptions = await relationsHandler.getFieldsWithRelationOptions()
