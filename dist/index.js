@@ -720,9 +720,10 @@
         var options = [];
         documents.forEach(function (document) {
           var parsedDocument = document.toJSON();
+          var fieldProps = _this.fieldsWithRelation[key].props;
           options.push({
-            value: document.uuid,
-            label: document[_this.fieldsWithRelation[key].props['refLabel']],
+            value: fieldProps['refValue'] || document.uuid,
+            label: document[fieldProps['refLabel']],
             data: parsedDocument
           });
           return parsedDocument;
