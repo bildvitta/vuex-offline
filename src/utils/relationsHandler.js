@@ -13,10 +13,11 @@ export default class {
 
     documents.forEach(document => {
       const parsedDocument = document.toJSON()
+      const fieldProps = this.fieldsWithRelation[key].props
 
       options.push({
-        value: document.uuid,
-        label: document[this.fieldsWithRelation[key].props['refLabel']],
+        value: fieldProps['refValue'] || document.uuid,
+        label: document[fieldProps['refLabel']],
         data: parsedDocument
       })
 
