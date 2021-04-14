@@ -97,7 +97,7 @@ export default class {
     const allFields = this.getAllFields()
 
     for (const key in allFields) {
-      if (allFields[key].ref) {
+      if (allFields[key].ref || (allFields[key].props && allFields[key].props.manyToMany)) {
         fields[key] = allFields[key]
       }
     }

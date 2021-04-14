@@ -36,8 +36,6 @@ export default class VuexOffline {
     const fieldsList = collectionHandler.getFiltersFields()
     const fieldsWithRelation = collectionHandler.getFieldsWithRelation()
     const allFields = collectionHandler.getAllFields()
-    collectionHandler.getCustomManyToManyFields()
-    console.log('ué')
 
     const relationsHandler = new RelationsHandler(collection, this.databaseSetup.collections)
     const fieldsWithRelationOptions = await relationsHandler.getFieldsWithRelationOptions()
@@ -76,6 +74,7 @@ export default class VuexOffline {
           }
         }
       } catch (error) {
+        console.log(error, )
         commit('setErrors', { model, hasError: true })
         throw new ValidateCustomError(error, collection)
       }
@@ -180,6 +179,7 @@ export default class VuexOffline {
               }
             }
           } catch (error) {
+            console.log(error)
             commit('setErrors', { model: 'onCreate', hasError: true })
             throw new ValidateCustomError(error, collection)
           }
@@ -228,6 +228,7 @@ export default class VuexOffline {
               }
             }
           } catch (error) {
+            console.log(error)
             commit('setErrors', { model: 'onFetchSingle', hasError: true })
             throw error
           }
