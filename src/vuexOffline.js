@@ -28,6 +28,8 @@ export default class VuexOffline {
     const perPage = options.perPage || 12
     const collection = this.databaseSetup.collections[collectionName]
 
+    window.collections = this.databaseSetup.collections
+
     const collectionHandler = new CollectionHandler(collection)
     const { filters: filtersList, search: searchList } = collectionHandler.getFiltersAndSearch()
     const fieldsList = collectionHandler.getFiltersFields()
