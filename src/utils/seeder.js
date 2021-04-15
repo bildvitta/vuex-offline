@@ -11,13 +11,15 @@ export default class {
       throw new Error('Please, provide an instance of DatabaseSetup')
     }
 
+    window.faker = faker
+
     this.databaseSetup = databaseSetup
     this.collectionsList = collectionsList
     this.seedQuantity = seedQuantity
     this.uuid = new Uuid()
 
     this.seederTypes = {
-      boolean: '{{random.boolean}}',
+      boolean: '{{datatype.boolean}}',
       checkbox: '{{lorem.word}}',
       color: '{{internet.color}}',
       date: '{{date.recent}}',
@@ -26,7 +28,7 @@ export default class {
       editor: '{{lorem.paragraphs}}',
       email: '{{internet.email}}',
       money: '{{commerce.price}}',
-      number: '{{random.number}}',
+      number: '{{datatype.number}}',
       password: '{{internet.password}}',
       percent: '{{random.float}}',
       radio: '{{lorem.word}}',
@@ -39,13 +41,13 @@ export default class {
     }
 
     this.defaultSchemaTypes = {
-      string: '',
-      array: []
+      string: 'seed-test',
+      array: ['seed-test']
     }
   }
 
   initialize () {
-    this.handleCollections()
+    return this.handleCollections()
   }
 
   handleCollections () {
@@ -58,25 +60,24 @@ export default class {
     }
   }
 
-  _handleDefaults (key) {
-    const self = this
-    const dateNow = formatISO(new Date())
-
-    const models = {
-      uuid () {
-        return self.uuid.create()
-      },
-
-      creaedAt () {
-        return dateNow
-      },
-
-      updatedAt () {
-        return dateNow
-      }
+  _propsHandler (props) {
+    function _getField () {
+      return props && props.field
     }
 
-    return models[key]()
+    return {
+      getField () {
+        return _getField()
+      },
+
+      getSeedValue () {
+        return props && props.seedValue
+      },
+
+      getType () {
+        return _getField() && _getField().type
+      }
+    }
   }
 
   generateDocuments (fields = {}, collection) {
@@ -86,39 +87,54 @@ export default class {
     for (const key in fields) {
       const field = fields[key]
       const { props, type, ref } = field
+      const { getField, getSeedValue, getType } = this._propsHandler(props)
 
       if (key.startsWith('_')) continue
 
       if (ref || (props && props.manyToMany)) {
-        normalizedField[key] = this.defaultSchemaTypes[type || props && props.field && props.type]
+        normalizedField[key] = this.defaultSchemaTypes[type || getType()]
         continue
       }
 
-      const defaults = this._handleDefaults(key)
-
-      if (defaults) {
-        normalizedField[key] = defaults
-        continue
-      }
-
-      normalizedField[key] = (
-        props && props.field && props.seedValue ||
-        props && props.field && props.type ||
-        type
+      normalizedField[key] = this.normalizeValue(
+        (getSeedValue() || getType() || type),
+        key
       )
-
-      if (!this.seederTypes[normalizedField[key]]) continue
-
-      normalizedField[key] = faker.fake(this.seederTypes[normalizedField[key]])
     }
 
-    for (const item of this.seedQuantity) {
-
+    for (let index = 1; index <= this.seedQuantity; index++) {
+      documents.push({ ...normalizedField, uuid: this.uuid.create() })
     }
-    // this.populate(documents, collection)
+
+    return this.populate(documents, collection)
+  }
+
+  normalizeValue (type, key, field) {
+    const dateNow = formatISO(new Date())
+
+    const models = {
+      number: () => Number(faker.fake(this.seederTypes[type])),
+      nested: () => [],
+      boolean: () => Boolean(faker.fake(this.seederTypes[type])),
+      createdAt: () => dateNow,
+      updatedAt: () => dateNow
+    }
+
+    const typeModel = models[type] && models[type]()
+    const keyModel = models[key] && models[key]()
+
+    try {
+      return typeModel || keyModel || faker.fake(this.seederTypes[type])
+    } catch {
+      return type || key
+    }
+
+    // return typeModel || keyModel || faker.fake(this.seederTypes[type])
   }
 
   async populate (documents, collection) {
     const results = await collection.bulkInsert(documents)
+
+    return results
   }
 }

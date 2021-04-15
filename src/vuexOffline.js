@@ -131,7 +131,7 @@ export default class VuexOffline {
 
         replaceItem (state, payload) {
           const index = state.list.findIndex(item => item[idAttribute] === payload[idAttribute])
-          
+
           ~index ? state.list.splice(index, 1, payload) : state.list.push(payload)
         },
 
