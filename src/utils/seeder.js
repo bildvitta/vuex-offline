@@ -149,9 +149,7 @@ export default class {
     }
   }
 
-  async populate (documents, collection) {
-    const results = await collection.bulkInsert(documents)
-
-    return results
+  populate (documents, collection) {
+    return collection.bulkInsert(documents)
   }
 }
