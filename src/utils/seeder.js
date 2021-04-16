@@ -1,6 +1,7 @@
 import CollectionHandler from './collectionHandler'
 import Uuid from './uuid'
 import DatabaseSetup from '../databaseSetup'
+import FormatError from './formatError'
 
 import { formatISO } from 'date-fns'
 import faker from 'faker'
@@ -10,8 +11,6 @@ export default class {
     if (!(databaseSetup instanceof DatabaseSetup)) {
       throw new Error('Please, provide an instance of DatabaseSetup')
     }
-
-    window.faker = faker
 
     this.databaseSetup = databaseSetup
     this.collectionsList = collectionsList
@@ -23,7 +22,7 @@ export default class {
       checkbox: '{{lorem.word}}',
       color: '{{internet.color}}',
       date: '{{date.recent}}',
-      datetime: '{{date.recent}}',
+      datetime: '{{datatype.datetime}}',
       decimal: '{{random.float}}',
       editor: '{{lorem.paragraphs}}',
       email: '{{internet.email}}',
@@ -41,8 +40,8 @@ export default class {
     }
 
     this.defaultSchemaTypes = {
-      string: 'seed-test',
-      array: ['seed-test']
+      string: '__change__this__value__',
+      array: ['__change__this__value__']
     }
   }
 
@@ -50,14 +49,27 @@ export default class {
     return this.handleCollections()
   }
 
-  handleCollections () {
+  async handleCollections () {
     for (const collectionName of this.collectionsList) {
-      const collection = this.databaseSetup.collections[collectionName]
-      const collectionHandler = new CollectionHandler(collection)
-      const fields = collectionHandler.getAllFields()
-
-      this.generateDocuments(fields, collection)
+      try {
+        const collection = this.databaseSetup.collections[collectionName]
+        const collectionHandler = new CollectionHandler(collection)
+        const fields = collectionHandler.getAllFields()
+        await this.generateDocuments(fields, collection)
+      } catch {
+        throw new FormatError({
+          errors: {
+            collection: collectionName
+          },
+          status: {
+            code: 500,
+            text: `Error on generate seed of collection ${collectionName}`
+          }
+        })
+      }
     }
+
+    return Promise.resolve(true)
   }
 
   _propsHandler (props) {
@@ -98,7 +110,8 @@ export default class {
 
       normalizedField[key] = this.normalizeValue(
         (getSeedValue() || getType() || type),
-        key
+        key,
+        field
       )
     }
 
@@ -113,6 +126,12 @@ export default class {
     const dateNow = formatISO(new Date())
 
     const models = {
+      select: () => {
+        const value = faker.fake(this.seederTypes[type])
+
+        return field.multiple ? value : [value]
+      },
+      datetime: () => dateNow,
       number: () => Number(faker.fake(this.seederTypes[type])),
       nested: () => [],
       boolean: () => Boolean(faker.fake(this.seederTypes[type])),
@@ -128,8 +147,6 @@ export default class {
     } catch {
       return type || key
     }
-
-    // return typeModel || keyModel || faker.fake(this.seederTypes[type])
   }
 
   async populate (documents, collection) {

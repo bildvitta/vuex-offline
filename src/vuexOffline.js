@@ -28,16 +28,12 @@ export default class VuexOffline {
     const perPage = options.perPage || 12
     const collection = this.databaseSetup.collections[collectionName]
 
-    window.collections = this.databaseSetup.collections
-
     const collectionHandler = new CollectionHandler(collection)
     const { filters: filtersList, search: searchList } = collectionHandler.getFiltersAndSearch()
     const fieldsList = collectionHandler.getFiltersFields()
-    const fieldsWithRelation = collectionHandler.getFieldsWithRelation()
     const allFields = collectionHandler.getAllFields()
 
     const relationsHandler = new RelationsHandler(collection, this.databaseSetup.collections)
-    const fieldsWithRelationOptions = await relationsHandler.getFieldsWithRelationOptions()
 
     const nested = new Nested()
 
@@ -191,6 +187,8 @@ export default class VuexOffline {
         },
 
         fetchSingle: async ({ commit }, { form, id, params, url } = {}) => {
+          const fieldsWithRelationOptions = await relationsHandler.getFieldsWithRelationOptions()
+
           if (!id && form) {
             return {
               data: {
@@ -212,7 +210,7 @@ export default class VuexOffline {
             const parsedDocument = document.toJSON()
             const fields = form
               ? fieldsWithRelationOptions
-              : await relationsHandler.getFieldsWithRelationOptionsById(parsedDocument)
+              : await relationsHandler.getFieldsWithRelationOptionsById(document)
 
             commit('replaceItem', parsedDocument)
             commit('setErrors', { model: 'onFetchSingle' })
@@ -248,6 +246,7 @@ export default class VuexOffline {
           { filters = {}, increment, ordering = [], page = 1, limit, search } = {}
         ) => {
           try {
+            const fieldsWithRelationOptions = await relationsHandler.getFieldsWithRelationOptions()
             const filtersHandler = new FiltersHandler({
               receivedFilters: filters,
               filtersList,
