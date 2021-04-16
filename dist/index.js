@@ -1,8 +1,12 @@
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('date-fns'), require('rxdb'), require('lodash')) :
-  typeof define === 'function' && define.amd ? define(['exports', 'date-fns', 'rxdb', 'lodash'], factory) :
-  (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.VuexOffline = {}, global.dateFns, global.rxdb, global.lodash));
-}(this, (function (exports, dateFns, rxdb, lodash) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('date-fns'), require('rxdb'), require('lodash'), require('faker')) :
+  typeof define === 'function' && define.amd ? define(['exports', 'date-fns', 'rxdb', 'lodash', 'faker'], factory) :
+  (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.VuexOffline = {}, global.dateFns, global.rxdb, global.lodash, global.faker));
+}(this, (function (exports, dateFns, rxdb, lodash, faker) { 'use strict';
+
+  function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
+
+  var faker__default = /*#__PURE__*/_interopDefaultLegacy(faker);
 
   function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
     try {
@@ -684,8 +688,11 @@
 
   var _default$4 = function _default() {
     var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
-        errors = _ref.errors;
-        _ref.status;
+        errors = _ref.errors,
+        _ref$status = _ref.status,
+        status = _ref$status === void 0 ? {
+      code: 400
+    } : _ref$status;
 
     _classCallCheck(this, _default);
 
@@ -693,9 +700,7 @@
       response: {
         data: {
           errors: errors,
-          status: {
-            code: 400
-          }
+          status: status
         }
       }
     };
@@ -717,6 +722,7 @@
 
         var documents = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
         var key = arguments.length > 1 ? arguments[1] : undefined;
+        documents = Array.isArray(documents) ? documents : [documents];
         var options = [];
         documents.forEach(function (document) {
           var parsedDocument = document.toJSON();
@@ -744,26 +750,36 @@
 
                 case 2:
                   if ((_context.t1 = _context.t0()).done) {
-                    _context.next = 12;
+                    _context.next = 15;
                     break;
                   }
 
                   key = _context.t1.value;
                   _context.t2 = this;
                   _context.next = 7;
-                  return document.populate(this.fieldsWithRelation[key].ref);
+                  return document.populate(key);
 
                 case 7:
                   _context.t3 = _context.sent;
-                  _context.t4 = key;
-                  fields[key].options = _context.t2.setOptions.call(_context.t2, _context.t3, _context.t4);
+
+                  if (_context.t3) {
+                    _context.next = 10;
+                    break;
+                  }
+
+                  _context.t3 = [];
+
+                case 10:
+                  _context.t4 = _context.t3;
+                  _context.t5 = key;
+                  fields[key].options = _context.t2.setOptions.call(_context.t2, _context.t4, _context.t5);
                   _context.next = 2;
                   break;
 
-                case 12:
+                case 15:
                   return _context.abrupt("return", fields);
 
-                case 13:
+                case 16:
                 case "end":
                   return _context.stop();
               }
@@ -996,7 +1012,6 @@
               fieldsList,
               allFields,
               relationsHandler,
-              fieldsWithRelationOptions,
               nested,
               save,
               module,
@@ -1022,14 +1037,8 @@
                   collectionHandler = new _default$1(collection);
                   _collectionHandler$ge = collectionHandler.getFiltersAndSearch(), filtersList = _collectionHandler$ge.filters, searchList = _collectionHandler$ge.search;
                   fieldsList = collectionHandler.getFiltersFields();
-                  collectionHandler.getFieldsWithRelation();
                   allFields = collectionHandler.getAllFields();
                   relationsHandler = new _default$5(collection, this.databaseSetup.collections);
-                  _context9.next = 14;
-                  return relationsHandler.getFieldsWithRelationOptions();
-
-                case 14:
-                  fieldsWithRelationOptions = _context9.sent;
                   nested = new _default$8();
 
                   save = /*#__PURE__*/function () {
@@ -1334,6 +1343,7 @@
                               _ref12,
                               form,
                               id,
+                              fieldsWithRelationOptions,
                               document,
                               parsedDocument,
                               fields,
@@ -1345,9 +1355,14 @@
                                 case 0:
                                   commit = _ref11.commit;
                                   _ref12 = _args5.length > 1 && _args5[1] !== undefined ? _args5[1] : {}, form = _ref12.form, id = _ref12.id, _ref12.params, _ref12.url;
+                                  _context5.next = 4;
+                                  return relationsHandler.getFieldsWithRelationOptions();
+
+                                case 4:
+                                  fieldsWithRelationOptions = _context5.sent;
 
                                   if (!(!id && form)) {
-                                    _context5.next = 4;
+                                    _context5.next = 7;
                                     break;
                                   }
 
@@ -1360,16 +1375,16 @@
                                     }
                                   });
 
-                                case 4:
-                                  _context5.prev = 4;
-                                  _context5.next = 7;
+                                case 7:
+                                  _context5.prev = 7;
+                                  _context5.next = 10;
                                   return collection.findOne(id).exec();
 
-                                case 7:
+                                case 10:
                                   document = _context5.sent;
 
                                   if (document) {
-                                    _context5.next = 10;
+                                    _context5.next = 13;
                                     break;
                                   }
 
@@ -1380,26 +1395,26 @@
                                     }
                                   });
 
-                                case 10:
+                                case 13:
                                   parsedDocument = document.toJSON();
 
                                   if (!form) {
-                                    _context5.next = 15;
+                                    _context5.next = 18;
                                     break;
                                   }
 
                                   _context5.t0 = fieldsWithRelationOptions;
-                                  _context5.next = 18;
+                                  _context5.next = 21;
                                   break;
 
-                                case 15:
-                                  _context5.next = 17;
-                                  return relationsHandler.getFieldsWithRelationOptionsById(parsedDocument);
+                                case 18:
+                                  _context5.next = 20;
+                                  return relationsHandler.getFieldsWithRelationOptionsById(document);
 
-                                case 17:
+                                case 20:
                                   _context5.t0 = _context5.sent;
 
-                                case 18:
+                                case 21:
                                   fields = _context5.t0;
                                   commit('replaceItem', parsedDocument);
                                   commit('setErrors', {
@@ -1415,21 +1430,21 @@
                                     }
                                   });
 
-                                case 24:
-                                  _context5.prev = 24;
-                                  _context5.t1 = _context5["catch"](4);
+                                case 27:
+                                  _context5.prev = 27;
+                                  _context5.t1 = _context5["catch"](7);
                                   commit('setErrors', {
                                     model: 'onFetchSingle',
                                     hasError: true
                                   });
                                   throw _context5.t1;
 
-                                case 28:
+                                case 31:
                                 case "end":
                                   return _context5.stop();
                               }
                             }
-                          }, _callee5, null, [[4, 24]]);
+                          }, _callee5, null, [[7, 27]]);
                         }));
 
                         function fetchSingle(_x7) {
@@ -1489,6 +1504,7 @@
                               page,
                               limit,
                               search,
+                              fieldsWithRelationOptions,
                               filtersHandler,
                               skip,
                               query,
@@ -1504,6 +1520,11 @@
                                   commit = _ref14.commit;
                                   _ref15 = _args7.length > 1 && _args7[1] !== undefined ? _args7[1] : {}, _ref15$filters = _ref15.filters, filters = _ref15$filters === void 0 ? {} : _ref15$filters, increment = _ref15.increment, _ref15.ordering, _ref15$page = _ref15.page, page = _ref15$page === void 0 ? 1 : _ref15$page, limit = _ref15.limit, search = _ref15.search;
                                   _context7.prev = 2;
+                                  _context7.next = 5;
+                                  return relationsHandler.getFieldsWithRelationOptions();
+
+                                case 5:
+                                  fieldsWithRelationOptions = _context7.sent;
                                   filtersHandler = new _default$3({
                                     receivedFilters: filters,
                                     filtersList: filtersList,
@@ -1513,15 +1534,15 @@
                                   });
                                   skip = (page - 1) * (limit || perPage);
                                   query = filtersHandler.transformQuery();
-                                  _context7.next = 8;
+                                  _context7.next = 11;
                                   return collectionHandler.getCount(query);
 
-                                case 8:
+                                case 11:
                                   count = _context7.sent;
-                                  _context7.next = 11;
+                                  _context7.next = 14;
                                   return collection.find(query).limit(limit || perPage).skip(skip).exec();
 
-                                case 11:
+                                case 14:
                                   documents = _context7.sent;
                                   parsedDocuments = documents.map(function (document) {
                                     return document.toJSON();
@@ -1544,8 +1565,8 @@
                                     }
                                   });
 
-                                case 18:
-                                  _context7.prev = 18;
+                                case 21:
+                                  _context7.prev = 21;
                                   _context7.t0 = _context7["catch"](2);
                                   commit('setErrors', {
                                     model: 'onFetchList',
@@ -1553,12 +1574,12 @@
                                   });
                                   throw _context7.t0;
 
-                                case 22:
+                                case 25:
                                 case "end":
                                   return _context7.stop();
                               }
                             }
-                          }, _callee7, null, [[2, 18]]);
+                          }, _callee7, null, [[2, 21]]);
                         }));
 
                         function fetchList(_x9) {
@@ -1641,7 +1662,7 @@
                   Object.assign(module.mutations, options.mutations);
                   return _context9.abrupt("return", module);
 
-                case 21:
+                case 17:
                 case "end":
                   return _context9.stop();
               }
@@ -1660,9 +1681,249 @@
     return VuexOffline;
   }();
 
+  var _default$9 = /*#__PURE__*/function () {
+    function _default$2(databaseSetup) {
+      var _ref = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {},
+          _ref$collectionsList = _ref.collectionsList,
+          collectionsList = _ref$collectionsList === void 0 ? [] : _ref$collectionsList,
+          _ref$seedQuantity = _ref.seedQuantity,
+          seedQuantity = _ref$seedQuantity === void 0 ? 25 : _ref$seedQuantity;
+
+      _classCallCheck(this, _default$2);
+
+      if (!(databaseSetup instanceof _default)) {
+        throw new Error('Please, provide an instance of DatabaseSetup');
+      }
+
+      this.databaseSetup = databaseSetup;
+      this.collectionsList = collectionsList;
+      this.seedQuantity = seedQuantity;
+      this.uuid = new _default$6();
+      this.seederTypes = {
+        "boolean": '{{datatype.boolean}}',
+        checkbox: '{{lorem.word}}',
+        color: '{{internet.color}}',
+        date: '{{date.recent}}',
+        datetime: '{{datatype.datetime}}',
+        decimal: '{{random.float}}',
+        editor: '{{lorem.paragraphs}}',
+        email: '{{internet.email}}',
+        money: '{{commerce.price}}',
+        number: '{{datatype.number}}',
+        password: '{{internet.password}}',
+        percent: '{{random.float}}',
+        radio: '{{lorem.word}}',
+        select: '{{lorem.sentence}}',
+        text: '{{lorem.sentence}}',
+        string: '{{lorem.sentence}}',
+        textarea: '{{lorem.sentences}}',
+        time: '{{time.recent}}',
+        upload: '{{image.image}}'
+      };
+      this.defaultSchemaTypes = {
+        string: '__change__this__value__',
+        array: ['__change__this__value__']
+      };
+    }
+
+    _createClass(_default$2, [{
+      key: "initialize",
+      value: function initialize() {
+        return this.handleCollections();
+      }
+    }, {
+      key: "handleCollections",
+      value: function () {
+        var _handleCollections = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
+          var _iterator, _step, collectionName, collection, collectionHandler, fields;
+
+          return regeneratorRuntime.wrap(function _callee$(_context) {
+            while (1) {
+              switch (_context.prev = _context.next) {
+                case 0:
+                  _iterator = _createForOfIteratorHelper(this.collectionsList);
+                  _context.prev = 1;
+
+                  _iterator.s();
+
+                case 3:
+                  if ((_step = _iterator.n()).done) {
+                    _context.next = 18;
+                    break;
+                  }
+
+                  collectionName = _step.value;
+                  _context.prev = 5;
+                  collection = this.databaseSetup.collections[collectionName];
+                  collectionHandler = new _default$1(collection);
+                  fields = collectionHandler.getAllFields();
+                  _context.next = 11;
+                  return this.generateDocuments(fields, collection);
+
+                case 11:
+                  _context.next = 16;
+                  break;
+
+                case 13:
+                  _context.prev = 13;
+                  _context.t0 = _context["catch"](5);
+                  throw new _default$4({
+                    errors: {
+                      collection: collectionName
+                    },
+                    status: {
+                      code: 500,
+                      text: "Error on generate seed of collection ".concat(collectionName)
+                    }
+                  });
+
+                case 16:
+                  _context.next = 3;
+                  break;
+
+                case 18:
+                  _context.next = 23;
+                  break;
+
+                case 20:
+                  _context.prev = 20;
+                  _context.t1 = _context["catch"](1);
+
+                  _iterator.e(_context.t1);
+
+                case 23:
+                  _context.prev = 23;
+
+                  _iterator.f();
+
+                  return _context.finish(23);
+
+                case 26:
+                  return _context.abrupt("return", Promise.resolve(true));
+
+                case 27:
+                case "end":
+                  return _context.stop();
+              }
+            }
+          }, _callee, this, [[1, 20, 23, 26], [5, 13]]);
+        }));
+
+        function handleCollections() {
+          return _handleCollections.apply(this, arguments);
+        }
+
+        return handleCollections;
+      }()
+    }, {
+      key: "_propsHandler",
+      value: function _propsHandler(props) {
+        function _getField() {
+          return props && props.field;
+        }
+
+        return {
+          getField: function getField() {
+            return _getField();
+          },
+          getSeedValue: function getSeedValue() {
+            return props && props.seedValue;
+          },
+          getType: function getType() {
+            return _getField() && _getField().type;
+          }
+        };
+      }
+    }, {
+      key: "generateDocuments",
+      value: function generateDocuments() {
+        var fields = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+        var collection = arguments.length > 1 ? arguments[1] : undefined;
+        var documents = [];
+        var normalizedField = {};
+
+        for (var key in fields) {
+          var field = fields[key];
+          var props = field.props,
+              type = field.type,
+              ref = field.ref;
+
+          var _this$_propsHandler = this._propsHandler(props);
+              _this$_propsHandler.getField;
+              var getSeedValue = _this$_propsHandler.getSeedValue,
+              getType = _this$_propsHandler.getType;
+
+          if (key.startsWith('_')) continue;
+
+          if (ref || props && props.manyToMany) {
+            normalizedField[key] = this.defaultSchemaTypes[type || getType()];
+            continue;
+          }
+
+          normalizedField[key] = this.normalizeValue(getSeedValue() || getType() || type, key, field);
+        }
+
+        for (var index = 1; index <= this.seedQuantity; index++) {
+          documents.push(_objectSpread2(_objectSpread2({}, normalizedField), {}, {
+            uuid: this.uuid.create()
+          }));
+        }
+
+        return this.populate(documents, collection);
+      }
+    }, {
+      key: "normalizeValue",
+      value: function normalizeValue(type, key, field) {
+        var _this = this;
+
+        var dateNow = dateFns.formatISO(new Date());
+        var models = {
+          select: function select() {
+            var value = faker__default['default'].fake(_this.seederTypes[type]);
+            return field.multiple ? value : [value];
+          },
+          datetime: function datetime() {
+            return dateNow;
+          },
+          number: function number() {
+            return Number(faker__default['default'].fake(_this.seederTypes[type]));
+          },
+          nested: function nested() {
+            return [];
+          },
+          "boolean": function boolean() {
+            return Boolean(faker__default['default'].fake(_this.seederTypes[type]));
+          },
+          createdAt: function createdAt() {
+            return dateNow;
+          },
+          updatedAt: function updatedAt() {
+            return dateNow;
+          }
+        };
+        var typeModel = models[type] && models[type]();
+        var keyModel = models[key] && models[key]();
+
+        try {
+          return typeModel || keyModel || faker__default['default'].fake(this.seederTypes[type]);
+        } catch (_unused2) {
+          return type || key;
+        }
+      }
+    }, {
+      key: "populate",
+      value: function populate(documents, collection) {
+        return collection.bulkInsert(documents);
+      }
+    }]);
+
+    return _default$2;
+  }();
+
   exports.CollectionHandler = _default$1;
   exports.DatabaseSetup = _default;
   exports.Nested = _default$8;
+  exports.Seeder = _default$9;
   exports.default = VuexOffline;
 
   Object.defineProperty(exports, '__esModule', { value: true });
