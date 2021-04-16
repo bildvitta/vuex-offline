@@ -9,6 +9,8 @@ export default class {
   }
 
   setOptions (documents = [], key) {
+    documents = Array.isArray(documents) ? documents : [documents]
+
     const options = []
 
     documents.forEach(document => {
@@ -32,7 +34,7 @@ export default class {
 
     for (const key in this.fieldsWithRelation) {
       fields[key].options = this.setOptions(
-        await document.populate(this.fieldsWithRelation[key].ref), key
+        await document.populate(key) || [], key
       )
     }
 
