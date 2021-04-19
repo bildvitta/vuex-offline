@@ -8,8 +8,11 @@ export default class {
     this.collections = collections
   }
 
-  setOptions (documents = [], key, relationValues = []) {
+  setOptions (documents = [], key) {
     if (!documents.length) return []
+
+    documents = Array.isArray(documents) ? documents : [documents]
+
     const options = []
 
     documents.forEach(document => {
@@ -41,7 +44,7 @@ export default class {
       }
 
       fields[key].options = this.setOptions(
-        await document.populate(this.fieldsWithRelation[key].ref), key
+        await document.populate(key) || [], key
       )
     }
 
