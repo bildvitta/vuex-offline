@@ -28,9 +28,6 @@ export default class VuexOffline {
     const perPage = options.perPage || 12
     const collection = this.databaseSetup.collections[collectionName]
 
-    // TODO remover
-    window.collections = this.databaseSetup.collections
-
     const collectionHandler = new CollectionHandler(collection)
     const { filters: filtersList, search: searchList } = collectionHandler.getFiltersAndSearch()
     const fieldsList = collectionHandler.getFiltersFields()
@@ -72,7 +69,6 @@ export default class VuexOffline {
           }
         }
       } catch (error) {
-        console.log(error, )
         commit('setErrors', { model, hasError: true })
         throw new ValidateCustomError(error, collection)
       }
@@ -227,7 +223,6 @@ export default class VuexOffline {
               }
             }
           } catch (error) {
-            console.log(error)
             commit('setErrors', { model: 'onFetchSingle', hasError: true })
             throw error
           }
