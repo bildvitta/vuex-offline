@@ -177,7 +177,6 @@ export default class VuexOffline {
               }
             }
           } catch (error) {
-            console.log(error)
             commit('setErrors', { model: 'onCreate', hasError: true })
             throw new ValidateCustomError(error, collection)
           }

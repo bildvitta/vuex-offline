@@ -97,87 +97,8 @@ export default class {
 
   async createCollections (collections) {
     try {
-      // TODO remover
-      const users = {
-        type: 'object',
-        version: 0,
-        properties: {
-          uuid: {
-            type: 'string',
-            primary: true
-          },
-          name: {
-            type: 'string',
-            props: {
-              field: {
-                name: 'name',
-                type: 'text',
-                label: 'Nome do usuario'
-              }
-            }
-          }
-        }
-      }
-
-      const posts = {
-        type: 'object',
-        version: 0,
-        properties: {
-          uuid: {
-            type: 'string',
-            primary: true
-          },
-
-          title: {
-            type: 'string',
-            props: {
-              field: {
-                name: 'title',
-                type: 'text',
-                label: 'titulo do post'
-              }
-            }
-          },
-
-          users: {
-            type: 'array',
-            props: {
-              manyToMany: 'users',
-              field: {
-                type: 'select',
-                name: 'users',
-                multiple: true,
-                label: 'meus usuarios'
-              },
-              refLabel: 'name'
-            },
-            items: {
-              type: 'object',
-              properties: {
-                uuid: {
-                  type: 'string'
-                },
-                isOwner: {
-                  type: 'boolean'
-                }
-              }
-            }
-          }
-        }
-      }
-
       // addCollections from rxdb
-      const collection = await this.database.addCollections({
-        ...(collections || this.collectionsOptions),
-
-        users: {
-          schema: users
-        },
-
-        posts: {
-          schema: posts
-        }
-      })
+      const collection = await this.database.addCollections(collections || this.collectionsOptions)
 
       this.collections = this.database.collections
 
