@@ -462,7 +462,7 @@
         for (var key in fields) {
           if (fields[key].props) {
             customFields[key] = fields[key].props;
-            callback(fields[key].props);
+            callback(fields[key].props, key);
           }
         }
 
@@ -547,11 +547,24 @@
         var allFields = this.getAllFields();
 
         for (var key in allFields) {
-          if (allFields[key].ref) {
+          if (allFields[key].ref || allFields[key].props && allFields[key].props.manyToMany) {
             fields[key] = allFields[key];
           }
         }
 
+        return fields;
+      }
+    }, {
+      key: "getCustomManyToManyFields",
+      value: function getCustomManyToManyFields() {
+        var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : function () {};
+        var fields = {};
+        this.getCustomFields(function (custom, key) {
+          if (custom.manyToMany) {
+            fields[key] = custom;
+            callback(custom);
+          }
+        });
         return fields;
       }
     }]);
@@ -722,25 +735,41 @@
 
         var documents = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
         var key = arguments.length > 1 ? arguments[1] : undefined;
+        var relationValues = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
+        if (!documents.length) return [];
         documents = Array.isArray(documents) ? documents : [documents];
         var options = [];
         documents.forEach(function (document) {
           var parsedDocument = document.toJSON();
           var fieldProps = _this.fieldsWithRelation[key].props;
+          var relation = relationValues.find(function (item) {
+            return item.uuid === document.uuid;
+          });
           options.push({
             value: fieldProps['refValue'] || document.uuid,
             label: document[fieldProps['refLabel']],
-            data: parsedDocument
+            data: parsedDocument,
+            relation: relation
           });
           return parsedDocument;
         });
         return options;
       }
     }, {
+      key: "_propsHandler",
+      value: function _propsHandler(props) {
+        return {
+          getManyToMany: function getManyToMany() {
+            return props && props.manyToMany;
+          }
+        };
+      }
+    }, {
       key: "getFieldsWithRelationOptionsById",
       value: function () {
         var _getFieldsWithRelationOptionsById = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(document) {
-          var fields, key;
+          var fields, key, _this$_propsHandler, getManyToMany, results;
+
           return regeneratorRuntime.wrap(function _callee$(_context) {
             while (1) {
               switch (_context.prev = _context.next) {
@@ -750,36 +779,54 @@
 
                 case 2:
                   if ((_context.t1 = _context.t0()).done) {
-                    _context.next = 15;
+                    _context.next = 22;
                     break;
                   }
 
                   key = _context.t1.value;
+                  _this$_propsHandler = this._propsHandler(this.fieldsWithRelation[key].props), getManyToMany = _this$_propsHandler.getManyToMany;
+
+                  if (!getManyToMany()) {
+                    _context.next = 11;
+                    break;
+                  }
+
+                  _context.next = 8;
+                  return this.collections[key].findByIds(document[key].map(function (item) {
+                    return item.uuid;
+                  }));
+
+                case 8:
+                  results = _context.sent;
+                  fields[key].options = this.setOptions(Array.from(results.values()), key, document[key]);
+                  return _context.abrupt("continue", 2);
+
+                case 11:
                   _context.t2 = this;
-                  _context.next = 7;
+                  _context.next = 14;
                   return document.populate(key);
 
-                case 7:
+                case 14:
                   _context.t3 = _context.sent;
 
                   if (_context.t3) {
-                    _context.next = 10;
+                    _context.next = 17;
                     break;
                   }
 
                   _context.t3 = [];
 
-                case 10:
+                case 17:
                   _context.t4 = _context.t3;
                   _context.t5 = key;
                   fields[key].options = _context.t2.setOptions.call(_context.t2, _context.t4, _context.t5);
                   _context.next = 2;
                   break;
 
-                case 15:
+                case 22:
                   return _context.abrupt("return", fields);
 
-                case 16:
+                case 23:
                 case "end":
                   return _context.stop();
               }
@@ -797,7 +844,8 @@
       key: "getFieldsWithRelationOptions",
       value: function () {
         var _getFieldsWithRelationOptions = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2(externalFields) {
-          var fields, key;
+          var fields, key, _this$_propsHandler2, getManyToMany;
+
           return regeneratorRuntime.wrap(function _callee2$(_context2) {
             while (1) {
               switch (_context2.prev = _context2.next) {
@@ -807,26 +855,27 @@
 
                 case 2:
                   if ((_context2.t1 = _context2.t0()).done) {
-                    _context2.next = 12;
+                    _context2.next = 13;
                     break;
                   }
 
                   key = _context2.t1.value;
+                  _this$_propsHandler2 = this._propsHandler(this.fieldsWithRelation[key].props), getManyToMany = _this$_propsHandler2.getManyToMany;
                   _context2.t2 = this;
-                  _context2.next = 7;
-                  return this.collections[this.fieldsWithRelation[key].ref].find().exec();
+                  _context2.next = 8;
+                  return this.collections[this.fieldsWithRelation[key].ref || getManyToMany()].find().exec();
 
-                case 7:
+                case 8:
                   _context2.t3 = _context2.sent;
                   _context2.t4 = key;
                   fields[key].options = _context2.t2.setOptions.call(_context2.t2, _context2.t3, _context2.t4);
                   _context2.next = 2;
                   break;
 
-                case 12:
+                case 13:
                   return _context2.abrupt("return", fields);
 
-                case 13:
+                case 14:
                 case "end":
                   return _context2.stop();
               }
