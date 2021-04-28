@@ -52,7 +52,6 @@ export default class VuexOffline {
     const idAttribute = options.idAttribute || this.idAttribute || 'uuid'
     const perPage = options.perPage || 12
     const collection = this.databaseSetup.collections[collectionName]
-    window.cl = this.databaseSetup.collections
 
     const collectionHandler = new CollectionHandler(collection)
     const { filters: filtersList, search: searchList } = collectionHandler.getFiltersAndSearch()

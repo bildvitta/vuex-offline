@@ -1047,7 +1047,6 @@
                   idAttribute = options.idAttribute || this.idAttribute || 'uuid';
                   perPage = options.perPage || 12;
                   collection = this.databaseSetup.collections[collectionName];
-                  window.cl = this.databaseSetup.collections;
                   collectionHandler = new _default$1(collection);
                   _collectionHandler$ge = collectionHandler.getFiltersAndSearch(), filtersList = _collectionHandler$ge.filters, searchList = _collectionHandler$ge.search;
                   fieldsList = collectionHandler.getFiltersFields();
@@ -1839,7 +1838,7 @@
                   Object.assign(module.mutations, options.mutations);
                   return _context9.abrupt("return", module);
 
-                case 19:
+                case 18:
                 case "end":
                   return _context9.stop();
               }
