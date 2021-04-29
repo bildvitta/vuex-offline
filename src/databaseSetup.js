@@ -99,6 +99,7 @@ export default class {
     try {
       // addCollections from rxdb
       const collection = await this.database.addCollections(collections || this.collectionsOptions)
+
       this.collections = this.database.collections
 
       return collection

@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 1.3.0 2021-04-28
 ### Added
+- new pro `manyToMany` for relations.
+- new way of relations many-to-many
 - Added middlewares to method `createStoreModule` inside `VuexOffline`
   - fetchListQuery;
   - fetchListSuccess;
