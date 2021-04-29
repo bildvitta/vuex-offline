@@ -8,19 +8,22 @@ export default class {
     this.collections = collections
   }
 
-  setOptions (documents = [], key) {
-    documents = Array.isArray(documents) ? documents : [documents]
+  setOptions (documents = [], key, relationValues = []) {
+    if (!documents.length) return []
 
+    documents = Array.isArray(documents) ? documents : [documents]
     const options = []
 
     documents.forEach(document => {
       const parsedDocument = document.toJSON()
       const fieldProps = this.fieldsWithRelation[key].props
+      const relation = relationValues.find(item => item.uuid === document.uuid)
 
       options.push({
         value: fieldProps['refValue'] || document.uuid,
         label: document[fieldProps['refLabel']],
-        data: parsedDocument
+        data: parsedDocument,
+        relation
       })
 
       return parsedDocument
@@ -29,13 +32,27 @@ export default class {
     return options
   }
 
+  _propsHandler (props) {
+    return {
+      getManyToMany () {
+        return props && props.manyToMany
+      }
+    }
+  }
+
   async getFieldsWithRelationOptionsById (document) {
     const fields = cloneDeep(this.collectionHandler.getOnlyFields())
 
     for (const key in this.fieldsWithRelation) {
-      fields[key].options = this.setOptions(
-        await document.populate(key) || [], key
-      )
+      const { getManyToMany } = this._propsHandler(this.fieldsWithRelation[key].props)
+
+      if (getManyToMany()) {
+        const results = await this.collections[key].findByIds(document[key].map(item => item.uuid))
+        fields[key].options = this.setOptions(Array.from(results.values()), key, document[key])
+        continue
+      }
+
+      fields[key].options = this.setOptions(await document.populate(key) || [], key)
     }
 
     return fields
@@ -45,8 +62,12 @@ export default class {
     const fields = cloneDeep(externalFields || this.collectionHandler.getOnlyFields())
 
     for (const key in this.fieldsWithRelation) {
+      const { getManyToMany } = this._propsHandler(this.fieldsWithRelation[key].props)
+
       fields[key].options = this.setOptions(
-        await this.collections[this.fieldsWithRelation[key].ref].find().exec(), key
+        await this.collections[
+          this.fieldsWithRelation[key].ref || getManyToMany()
+        ].find().exec(), key
       )
     }
 
