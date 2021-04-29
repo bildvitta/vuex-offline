@@ -1051,6 +1051,17 @@
       value: function () {
         var _createStoreModule = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee9(collectionName) {
           var options,
+              _ref,
+              fetchListQuery,
+              fetchListSuccess,
+              fetchListError,
+              fetchSingleSuccess,
+              fetchSingleFormSuccess,
+              fetchSingleError,
+              saveSuccess,
+              saveError,
+              createSuccess,
+              createError,
               idAttribute,
               perPage,
               collection,
@@ -1080,6 +1091,8 @@
                   throw new Error('CollectionName name must be sended.');
 
                 case 3:
+                  // middlewares
+                  _ref = options.middlewares || {}, fetchListQuery = _ref.fetchListQuery, fetchListSuccess = _ref.fetchListSuccess, fetchListError = _ref.fetchListError, _ref.fetchFiltersSuccess, _ref.fetchFiltersError, fetchSingleSuccess = _ref.fetchSingleSuccess, fetchSingleFormSuccess = _ref.fetchSingleFormSuccess, fetchSingleError = _ref.fetchSingleError, saveSuccess = _ref.saveSuccess, saveError = _ref.saveError, createSuccess = _ref.createSuccess, createError = _ref.createError;
                   idAttribute = options.idAttribute || this.idAttribute || 'uuid';
                   perPage = options.perPage || 12;
                   collection = this.databaseSetup.collections[collectionName];
@@ -1091,22 +1104,24 @@
                   nested = new _default$8();
 
                   save = /*#__PURE__*/function () {
-                    var _ref2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(_ref) {
+                    var _ref3 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(_ref2) {
                       var commit,
-                          _ref3,
+                          _ref4,
                           payload,
                           id,
                           model,
                           document,
                           parsedDocument,
+                          response,
+                          saveSuccessResult,
                           _args = arguments;
 
                       return regeneratorRuntime.wrap(function _callee$(_context) {
                         while (1) {
                           switch (_context.prev = _context.next) {
                             case 0:
-                              commit = _ref.commit;
-                              _ref3 = _args.length > 1 && _args[1] !== undefined ? _args[1] : {}, payload = _ref3.payload, id = _ref3.id, model = _ref3.model;
+                              commit = _ref2.commit;
+                              _ref4 = _args.length > 1 && _args[1] !== undefined ? _args[1] : {}, payload = _ref4.payload, id = _ref4.id, model = _ref4.model;
                               _context.prev = 2;
                               document = collection.findOne(id || payload.uuid);
 
@@ -1137,38 +1152,64 @@
 
                             case 10:
                               parsedDocument = _context.sent;
-                              commit('setErrors', {
-                                model: model
-                              });
-                              commit('replaceItem', parsedDocument.toJSON());
-                              return _context.abrupt("return", {
+                              response = {
                                 data: {
                                   result: parsedDocument,
                                   status: {
                                     code: 200
                                   }
                                 }
-                              });
+                              };
+                              _context.next = 14;
+                              return saveSuccess;
 
-                            case 16:
-                              _context.prev = 16;
-                              _context.t0 = _context["catch"](2);
+                            case 14:
+                              _context.t1 = _context.sent;
+
+                              if (!_context.t1) {
+                                _context.next = 17;
+                                break;
+                              }
+
+                              _context.t1 = saveSuccess(response);
+
+                            case 17:
+                              _context.t0 = _context.t1;
+
+                              if (_context.t0) {
+                                _context.next = 20;
+                                break;
+                              }
+
+                              _context.t0 = {};
+
+                            case 20:
+                              saveSuccessResult = _context.t0;
+                              commit('setErrors', {
+                                model: model
+                              });
+                              commit('replaceItem', saveSuccessResult.result || parsedDocument.toJSON());
+                              return _context.abrupt("return", saveSuccess && saveSuccessResult || response);
+
+                            case 26:
+                              _context.prev = 26;
+                              _context.t2 = _context["catch"](2);
                               commit('setErrors', {
                                 model: model,
                                 hasError: true
                               });
-                              throw new _default$7(_context.t0, collection);
+                              throw saveError && saveError(_context.t2) || new _default$7(_context.t2, collection);
 
-                            case 20:
+                            case 30:
                             case "end":
                               return _context.stop();
                           }
                         }
-                      }, _callee, null, [[2, 16]]);
+                      }, _callee, null, [[2, 26]]);
                     }));
 
                     return function save(_x2) {
-                      return _ref2.apply(this, arguments);
+                      return _ref3.apply(this, arguments);
                     };
                   }();
 
@@ -1225,9 +1266,9 @@
                         var payload = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
                         state.list.push(payload);
                       },
-                      setErrors: function setErrors(state, _ref4) {
-                        var model = _ref4.model,
-                            hasError = _ref4.hasError;
+                      setErrors: function setErrors(state, _ref5) {
+                        var model = _ref5.model,
+                            hasError = _ref5.hasError;
                         state[model] = !!hasError;
                       },
                       replaceItem: function replaceItem(state, payload) {
@@ -1246,14 +1287,14 @@
                     // actions
                     actions: {
                       create: function () {
-                        var _create = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2(_ref5, _ref6) {
-                          var commit, payload, uuid, documentToBeInserted, dateNow, document, parsedDocument;
+                        var _create = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2(_ref6, _ref7) {
+                          var commit, payload, uuid, documentToBeInserted, dateNow, document, parsedDocument, response, createSuccessResult;
                           return regeneratorRuntime.wrap(function _callee2$(_context2) {
                             while (1) {
                               switch (_context2.prev = _context2.next) {
                                 case 0:
-                                  commit = _ref5.commit;
-                                  payload = _ref6.payload;
+                                  commit = _ref6.commit;
+                                  payload = _ref7.payload;
                                   _context2.prev = 2;
                                   uuid = new _default$6();
                                   documentToBeInserted = _objectSpread2({
@@ -1278,34 +1319,60 @@
                                 case 11:
                                   document = _context2.sent;
                                   parsedDocument = document.toJSON();
-                                  commit('setErrors', {
-                                    model: 'onCreate'
-                                  });
-                                  commit('setItemList', parsedDocument);
-                                  return _context2.abrupt("return", {
+                                  response = {
                                     data: {
                                       metadata: _objectSpread2({}, parsedDocument),
                                       status: {
                                         code: 200
                                       }
                                     }
-                                  });
+                                  };
+                                  _context2.next = 16;
+                                  return createSuccess;
 
-                                case 18:
-                                  _context2.prev = 18;
-                                  _context2.t0 = _context2["catch"](2);
+                                case 16:
+                                  _context2.t1 = _context2.sent;
+
+                                  if (!_context2.t1) {
+                                    _context2.next = 19;
+                                    break;
+                                  }
+
+                                  _context2.t1 = createSuccess(response);
+
+                                case 19:
+                                  _context2.t0 = _context2.t1;
+
+                                  if (_context2.t0) {
+                                    _context2.next = 22;
+                                    break;
+                                  }
+
+                                  _context2.t0 = {};
+
+                                case 22:
+                                  createSuccessResult = _context2.t0;
+                                  commit('setErrors', {
+                                    model: 'onCreate'
+                                  });
+                                  commit('setItemList', createSuccessResult.metadata || parsedDocument);
+                                  return _context2.abrupt("return", createSuccess && createSuccessResult || response);
+
+                                case 28:
+                                  _context2.prev = 28;
+                                  _context2.t2 = _context2["catch"](2);
                                   commit('setErrors', {
                                     model: 'onCreate',
                                     hasError: true
                                   });
-                                  throw new _default$7(_context2.t0, collection);
+                                  throw createError && createError(_context2.t2) || new _default$7(_context2.t2, collection);
 
-                                case 22:
+                                case 32:
                                 case "end":
                                   return _context2.stop();
                               }
                             }
-                          }, _callee2, null, [[2, 18]]);
+                          }, _callee2, null, [[2, 28]]);
                         }));
 
                         function create(_x3, _x4) {
@@ -1315,9 +1382,9 @@
                         return create;
                       }(),
                       replace: function () {
-                        var _replace = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee3(_ref7) {
+                        var _replace = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee3(_ref8) {
                           var commit,
-                              _ref8,
+                              _ref9,
                               payload,
                               id,
                               _args3 = arguments;
@@ -1326,8 +1393,8 @@
                             while (1) {
                               switch (_context3.prev = _context3.next) {
                                 case 0:
-                                  commit = _ref7.commit;
-                                  _ref8 = _args3.length > 1 && _args3[1] !== undefined ? _args3[1] : {}, payload = _ref8.payload, id = _ref8.id;
+                                  commit = _ref8.commit;
+                                  _ref9 = _args3.length > 1 && _args3[1] !== undefined ? _args3[1] : {}, payload = _ref9.payload, id = _ref9.id;
                                   return _context3.abrupt("return", save({
                                     commit: commit
                                   }, {
@@ -1351,9 +1418,9 @@
                         return replace;
                       }(),
                       update: function () {
-                        var _update = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee4(_ref9) {
+                        var _update = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee4(_ref10) {
                           var commit,
-                              _ref10,
+                              _ref11,
                               payload,
                               id,
                               _args4 = arguments;
@@ -1362,8 +1429,8 @@
                             while (1) {
                               switch (_context4.prev = _context4.next) {
                                 case 0:
-                                  commit = _ref9.commit;
-                                  _ref10 = _args4.length > 1 && _args4[1] !== undefined ? _args4[1] : {}, payload = _ref10.payload, id = _ref10.id;
+                                  commit = _ref10.commit;
+                                  _ref11 = _args4.length > 1 && _args4[1] !== undefined ? _args4[1] : {}, payload = _ref11.payload, id = _ref11.id;
                                   return _context4.abrupt("return", save({
                                     commit: commit
                                   }, {
@@ -1387,23 +1454,27 @@
                         return update;
                       }(),
                       fetchSingle: function () {
-                        var _fetchSingle = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee5(_ref11) {
+                        var _fetchSingle = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee5(_ref12) {
                           var commit,
-                              _ref12,
+                              _ref13,
                               form,
                               id,
                               fieldsWithRelationOptions,
+                              response,
+                              fetchSingleFormSuccessResult,
                               document,
                               parsedDocument,
                               fields,
+                              _response,
+                              fetchSingleSuccessResult,
                               _args5 = arguments;
 
                           return regeneratorRuntime.wrap(function _callee5$(_context5) {
                             while (1) {
                               switch (_context5.prev = _context5.next) {
                                 case 0:
-                                  commit = _ref11.commit;
-                                  _ref12 = _args5.length > 1 && _args5[1] !== undefined ? _args5[1] : {}, form = _ref12.form, id = _ref12.id, _ref12.params, _ref12.url;
+                                  commit = _ref12.commit;
+                                  _ref13 = _args5.length > 1 && _args5[1] !== undefined ? _args5[1] : {}, form = _ref13.form, id = _ref13.id, _ref13.params, _ref13.url;
                                   _context5.next = 4;
                                   return relationsHandler.getFieldsWithRelationOptions();
 
@@ -1411,29 +1482,45 @@
                                   fieldsWithRelationOptions = _context5.sent;
 
                                   if (!(!id && form)) {
-                                    _context5.next = 7;
+                                    _context5.next = 14;
                                     break;
                                   }
 
-                                  return _context5.abrupt("return", {
+                                  response = {
                                     data: {
                                       status: {
                                         code: 200
                                       },
                                       fields: fieldsWithRelationOptions
                                     }
-                                  });
+                                  };
+                                  _context5.next = 9;
+                                  return fetchSingleFormSuccess;
 
-                                case 7:
-                                  _context5.prev = 7;
-                                  _context5.next = 10;
+                                case 9:
+                                  _context5.t0 = _context5.sent;
+
+                                  if (!_context5.t0) {
+                                    _context5.next = 12;
+                                    break;
+                                  }
+
+                                  _context5.t0 = fetchSingleFormSuccess(response);
+
+                                case 12:
+                                  fetchSingleFormSuccessResult = _context5.t0;
+                                  return _context5.abrupt("return", fetchSingleFormSuccessResult || response);
+
+                                case 14:
+                                  _context5.prev = 14;
+                                  _context5.next = 17;
                                   return collection.findOne(id).exec();
 
-                                case 10:
+                                case 17:
                                   document = _context5.sent;
 
                                   if (document) {
-                                    _context5.next = 13;
+                                    _context5.next = 20;
                                     break;
                                   }
 
@@ -1444,32 +1531,28 @@
                                     }
                                   });
 
-                                case 13:
+                                case 20:
                                   parsedDocument = document.toJSON();
 
                                   if (!form) {
-                                    _context5.next = 18;
+                                    _context5.next = 25;
                                     break;
                                   }
 
-                                  _context5.t0 = fieldsWithRelationOptions;
-                                  _context5.next = 21;
+                                  _context5.t1 = fieldsWithRelationOptions;
+                                  _context5.next = 28;
                                   break;
 
-                                case 18:
-                                  _context5.next = 20;
+                                case 25:
+                                  _context5.next = 27;
                                   return relationsHandler.getFieldsWithRelationOptionsById(document);
 
-                                case 20:
-                                  _context5.t0 = _context5.sent;
+                                case 27:
+                                  _context5.t1 = _context5.sent;
 
-                                case 21:
-                                  fields = _context5.t0;
-                                  commit('replaceItem', parsedDocument);
-                                  commit('setErrors', {
-                                    model: 'onFetchSingle'
-                                  });
-                                  return _context5.abrupt("return", {
+                                case 28:
+                                  fields = _context5.t1;
+                                  _response = {
                                     data: {
                                       fields: fields,
                                       result: parsedDocument,
@@ -1477,23 +1560,53 @@
                                         code: 200
                                       }
                                     }
-                                  });
+                                  };
+                                  _context5.next = 32;
+                                  return fetchSingleSuccess;
 
-                                case 27:
-                                  _context5.prev = 27;
-                                  _context5.t1 = _context5["catch"](7);
+                                case 32:
+                                  _context5.t3 = _context5.sent;
+
+                                  if (!_context5.t3) {
+                                    _context5.next = 35;
+                                    break;
+                                  }
+
+                                  _context5.t3 = fetchSingleSuccess(_objectSpread2({}, _response));
+
+                                case 35:
+                                  _context5.t2 = _context5.t3;
+
+                                  if (_context5.t2) {
+                                    _context5.next = 38;
+                                    break;
+                                  }
+
+                                  _context5.t2 = {};
+
+                                case 38:
+                                  fetchSingleSuccessResult = _context5.t2;
+                                  commit('replaceItem', fetchSingleSuccessResult.result || parsedDocument);
+                                  commit('setErrors', {
+                                    model: 'onFetchSingle'
+                                  });
+                                  return _context5.abrupt("return", fetchSingleSuccess && fetchSingleSuccessResult || _response);
+
+                                case 44:
+                                  _context5.prev = 44;
+                                  _context5.t4 = _context5["catch"](14);
                                   commit('setErrors', {
                                     model: 'onFetchSingle',
                                     hasError: true
                                   });
-                                  throw _context5.t1;
+                                  throw fetchSingleError && fetchSingleError(_context5.t4) || _context5.t4;
 
-                                case 31:
+                                case 48:
                                 case "end":
                                   return _context5.stop();
                               }
                             }
-                          }, _callee5, null, [[7, 27]]);
+                          }, _callee5, null, [[14, 44]]);
                         }));
 
                         function fetchSingle(_x7) {
@@ -1503,37 +1616,69 @@
                         return fetchSingle;
                       }(),
                       fetchFilters: function () {
-                        var _fetchFilters = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee6(_ref13) {
-                          var commit, filtersHandler, filterFields, formattedFilterFields;
+                        var _fetchFilters = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee6(_ref14) {
+                          var commit, filtersHandler, filterFields, formattedFilterFields, response, fetchFilterSuccessResult;
                           return regeneratorRuntime.wrap(function _callee6$(_context6) {
                             while (1) {
                               switch (_context6.prev = _context6.next) {
                                 case 0:
-                                  commit = _ref13.commit;
+                                  commit = _ref14.commit;
+                                  _context6.prev = 1;
                                   filtersHandler = new _default$3({
                                     filtersList: filtersList,
                                     fieldsList: fieldsList
                                   });
                                   filterFields = filtersHandler.getFilterFields();
-                                  _context6.next = 5;
+                                  _context6.next = 6;
                                   return relationsHandler.getFieldsWithRelationOptions(filterFields);
 
-                                case 5:
+                                case 6:
                                   formattedFilterFields = _context6.sent;
-                                  commit('setFilters', formattedFilterFields);
-                                  return _context6.abrupt("return", {
+                                  response = {
                                     fields: formattedFilterFields,
                                     status: {
                                       code: 200
                                     }
-                                  });
+                                  };
+                                  _context6.next = 10;
+                                  return fetchFilterSuccess;
 
-                                case 8:
+                                case 10:
+                                  _context6.t1 = _context6.sent;
+
+                                  if (!_context6.t1) {
+                                    _context6.next = 13;
+                                    break;
+                                  }
+
+                                  _context6.t1 = fetchFilterSuccess(response);
+
+                                case 13:
+                                  _context6.t0 = _context6.t1;
+
+                                  if (_context6.t0) {
+                                    _context6.next = 16;
+                                    break;
+                                  }
+
+                                  _context6.t0 = {};
+
+                                case 16:
+                                  fetchFilterSuccessResult = _context6.t0;
+                                  commit('setFilters', fetchFilterSuccessResult.fields || formattedFilterFields);
+                                  return _context6.abrupt("return", fetchFilterSuccess && fetchFilterSuccessResult || response);
+
+                                case 21:
+                                  _context6.prev = 21;
+                                  _context6.t2 = _context6["catch"](1);
+                                  throw fetchSingleError && fetchSingleError(_context6.t2) || _context6.t2;
+
+                                case 24:
                                 case "end":
                                   return _context6.stop();
                               }
                             }
-                          }, _callee6);
+                          }, _callee6, null, [[1, 21]]);
                         }));
 
                         function fetchFilters(_x8) {
@@ -1543,36 +1688,39 @@
                         return fetchFilters;
                       }(),
                       fetchList: function () {
-                        var _fetchList = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee7(_ref14) {
+                        var _fetchList = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee7(_ref15) {
                           var commit,
-                              _ref15,
-                              _ref15$filters,
+                              options,
+                              _options$filters,
                               filters,
                               increment,
-                              _ref15$page,
+                              _options$page,
                               page,
                               limit,
                               search,
                               fieldsWithRelationOptions,
                               filtersHandler,
-                              skip,
                               query,
+                              skip,
                               count,
                               documents,
                               parsedDocuments,
+                              response,
+                              fetchListSuccessResult,
                               _args7 = arguments;
 
                           return regeneratorRuntime.wrap(function _callee7$(_context7) {
                             while (1) {
                               switch (_context7.prev = _context7.next) {
                                 case 0:
-                                  commit = _ref14.commit;
-                                  _ref15 = _args7.length > 1 && _args7[1] !== undefined ? _args7[1] : {}, _ref15$filters = _ref15.filters, filters = _ref15$filters === void 0 ? {} : _ref15$filters, increment = _ref15.increment, _ref15.ordering, _ref15$page = _ref15.page, page = _ref15$page === void 0 ? 1 : _ref15$page, limit = _ref15.limit, search = _ref15.search;
-                                  _context7.prev = 2;
-                                  _context7.next = 5;
+                                  commit = _ref15.commit;
+                                  options = _args7.length > 1 && _args7[1] !== undefined ? _args7[1] : {};
+                                  _options$filters = options.filters, filters = _options$filters === void 0 ? {} : _options$filters, increment = options.increment, options.ordering, _options$page = options.page, page = _options$page === void 0 ? 1 : _options$page, limit = options.limit, search = options.search;
+                                  _context7.prev = 3;
+                                  _context7.next = 6;
                                   return relationsHandler.getFieldsWithRelationOptions();
 
-                                case 5:
+                                case 6:
                                   fieldsWithRelationOptions = _context7.sent;
                                   filtersHandler = new _default$3({
                                     receivedFilters: filters,
@@ -1581,30 +1729,24 @@
                                     searchList: searchList,
                                     fieldsList: fieldsList
                                   });
+                                  query = fetchListQuery && fetchListQuery(_objectSpread2({
+                                    fieldsWithRelationOptions: fieldsWithRelationOptions
+                                  }, options)) || filtersHandler.transformQuery();
                                   skip = (page - 1) * (limit || perPage);
-                                  query = filtersHandler.transformQuery();
-                                  _context7.next = 11;
+                                  _context7.next = 12;
                                   return collectionHandler.getCount(query);
 
-                                case 11:
+                                case 12:
                                   count = _context7.sent;
-                                  _context7.next = 14;
+                                  _context7.next = 15;
                                   return collection.find(query).limit(limit || perPage).skip(skip).exec();
 
-                                case 14:
+                                case 15:
                                   documents = _context7.sent;
                                   parsedDocuments = documents.map(function (document) {
                                     return document.toJSON();
                                   });
-                                  commit('setList', {
-                                    results: parsedDocuments,
-                                    increment: increment,
-                                    count: count
-                                  });
-                                  commit('setErrors', {
-                                    model: 'onFetchList'
-                                  });
-                                  return _context7.abrupt("return", {
+                                  response = {
                                     data: {
                                       results: parsedDocuments,
                                       fields: fieldsWithRelationOptions,
@@ -1612,23 +1754,57 @@
                                         code: 200
                                       }
                                     }
-                                  });
+                                  };
+                                  _context7.next = 20;
+                                  return fetchListSuccess;
 
-                                case 21:
-                                  _context7.prev = 21;
-                                  _context7.t0 = _context7["catch"](2);
+                                case 20:
+                                  _context7.t1 = _context7.sent;
+
+                                  if (!_context7.t1) {
+                                    _context7.next = 23;
+                                    break;
+                                  }
+
+                                  _context7.t1 = fetchListSuccess(response);
+
+                                case 23:
+                                  _context7.t0 = _context7.t1;
+
+                                  if (_context7.t0) {
+                                    _context7.next = 26;
+                                    break;
+                                  }
+
+                                  _context7.t0 = {};
+
+                                case 26:
+                                  fetchListSuccessResult = _context7.t0;
+                                  commit('setList', {
+                                    results: fetchListSuccessResult.results || parsedDocuments,
+                                    increment: increment,
+                                    count: count
+                                  });
+                                  commit('setErrors', {
+                                    model: 'onFetchList'
+                                  });
+                                  return _context7.abrupt("return", fetchListSuccess && fetchListSuccessResult || response);
+
+                                case 32:
+                                  _context7.prev = 32;
+                                  _context7.t2 = _context7["catch"](3);
                                   commit('setErrors', {
                                     model: 'onFetchList',
                                     hasError: true
                                   });
-                                  throw _context7.t0;
+                                  throw fetchListError && fetchListError(_context7.t2) || _context7.t2;
 
-                                case 25:
+                                case 36:
                                 case "end":
                                   return _context7.stop();
                               }
                             }
-                          }, _callee7, null, [[2, 21]]);
+                          }, _callee7, null, [[3, 32]]);
                         }));
 
                         function fetchList(_x9) {
@@ -1711,7 +1887,7 @@
                   Object.assign(module.mutations, options.mutations);
                   return _context9.abrupt("return", module);
 
-                case 17:
+                case 18:
                 case "end":
                   return _context9.stop();
               }

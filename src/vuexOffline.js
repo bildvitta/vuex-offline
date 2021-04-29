@@ -24,6 +24,31 @@ export default class VuexOffline {
       throw new Error('CollectionName name must be sended.')
     }
 
+    // middlewares
+    const {
+      // list
+      fetchListQuery,
+      fetchListSuccess,
+      fetchListError,
+
+      // filter
+      fetchFiltersSuccess,
+      fetchFiltersError,
+
+      // single
+      fetchSingleSuccess,
+      fetchSingleFormSuccess,
+      fetchSingleError,
+
+      // save
+      saveSuccess,
+      saveError,
+
+      // create
+      createSuccess,
+      createError
+    } = options.middlewares || {}
+
     const idAttribute = options.idAttribute || this.idAttribute || 'uuid'
     const perPage = options.perPage || 12
     const collection = this.databaseSetup.collections[collectionName]
@@ -58,19 +83,22 @@ export default class VuexOffline {
         })
 
         const parsedDocument = await document.update({ $set: { ...payload } })
-
-        commit('setErrors', { model })
-        commit('replaceItem', parsedDocument.toJSON())
-
-        return {
+        const response = {
           data: {
             result: parsedDocument,
             status: { code: 200 }
           }
         }
+
+        const saveSuccessResult = (await saveSuccess && saveSuccess(response)) || {}
+
+        commit('setErrors', { model })
+        commit('replaceItem', saveSuccessResult.result || parsedDocument.toJSON())
+
+        return saveSuccess && saveSuccessResult || response
       } catch (error) {
         commit('setErrors', { model, hasError: true })
-        throw new ValidateCustomError(error, collection)
+        throw saveError && saveError(error) || new ValidateCustomError(error, collection)
       }
     }
 
@@ -163,18 +191,22 @@ export default class VuexOffline {
             const document = await collection.insert(documentToBeInserted)
             const parsedDocument = document.toJSON()
 
-            commit('setErrors', { model: 'onCreate' })
-            commit('setItemList', parsedDocument)
-
-            return {
+            const response = {
               data: {
                 metadata: { ...parsedDocument },
                 status: { code: 200 }
               }
             }
+
+            const createSuccessResult = (await createSuccess && createSuccess(response)) || {}
+
+            commit('setErrors', { model: 'onCreate' })
+            commit('setItemList', createSuccessResult.metadata || parsedDocument)
+
+            return createSuccess && createSuccessResult || response
           } catch (error) {
             commit('setErrors', { model: 'onCreate', hasError: true })
-            throw new ValidateCustomError(error, collection)
+            throw createError && createError(error) || new ValidateCustomError(error, collection)
           }
         },
 
@@ -190,12 +222,15 @@ export default class VuexOffline {
           const fieldsWithRelationOptions = await relationsHandler.getFieldsWithRelationOptions()
 
           if (!id && form) {
-            return {
+            const response = {
               data: {
                 status: { code: 200 },
                 fields: fieldsWithRelationOptions
               }
             }
+
+            const fetchSingleFormSuccessResult = (await fetchSingleFormSuccess && fetchSingleFormSuccess(response))
+            return fetchSingleFormSuccessResult || response
           }
 
           try {
@@ -212,39 +247,48 @@ export default class VuexOffline {
               ? fieldsWithRelationOptions
               : await relationsHandler.getFieldsWithRelationOptionsById(document)
 
-            commit('replaceItem', parsedDocument)
-            commit('setErrors', { model: 'onFetchSingle' })
-
-            return {
+            const response = {
               data: {
                 fields,
                 result: parsedDocument,
                 status: { code: 200 }
               }
             }
+
+            const fetchSingleSuccessResult = (await fetchSingleSuccess && fetchSingleSuccess({ ...response })) || {}
+
+            commit('replaceItem', fetchSingleSuccessResult.result || parsedDocument)
+            commit('setErrors', { model: 'onFetchSingle' })
+
+            return fetchSingleSuccess && fetchSingleSuccessResult || response
           } catch (error) {
             commit('setErrors', { model: 'onFetchSingle', hasError: true })
-            throw error
+            throw fetchSingleError && fetchSingleError(error) || error
           }
         },
 
         fetchFilters: async ({ commit }) => {
-          const filtersHandler = new FiltersHandler({ filtersList, fieldsList })
-          const filterFields = filtersHandler.getFilterFields()
-          const formattedFilterFields = await relationsHandler.getFieldsWithRelationOptions(filterFields)
+          try {
+            const filtersHandler = new FiltersHandler({ filtersList, fieldsList })
+            const filterFields = filtersHandler.getFilterFields()
+            const formattedFilterFields = await relationsHandler.getFieldsWithRelationOptions(filterFields)
 
-          commit('setFilters', formattedFilterFields)
+            const response = {
+              fields: formattedFilterFields,
+              status: { code: 200 }
+            }
 
-          return {
-            fields: formattedFilterFields,
-            status: { code: 200 }
+            const fetchFilterSuccessResult = (await fetchFilterSuccess && fetchFilterSuccess(response)) || {}
+            commit('setFilters', fetchFilterSuccessResult.fields || formattedFilterFields)
+
+            return fetchFilterSuccess && fetchFilterSuccessResult || response
+          } catch (error) {
+            throw fetchSingleError && fetchSingleError(error) || error
           }
         },
 
-        fetchList: async (
-          { commit },
-          { filters = {}, increment, ordering = [], page = 1, limit, search } = {}
-        ) => {
+        fetchList: async ({ commit }, options = {}) => {
+          const { filters = {}, increment, ordering = [], page = 1, limit, search } = options
           try {
             const fieldsWithRelationOptions = await relationsHandler.getFieldsWithRelationOptions()
             const filtersHandler = new FiltersHandler({
@@ -255,25 +299,34 @@ export default class VuexOffline {
               fieldsList
             })
 
+            const query = (
+              fetchListQuery && fetchListQuery({
+                fieldsWithRelationOptions, ...options
+              }) || filtersHandler.transformQuery()
+            )
+
             const skip = (page - 1) * (limit || perPage)
-            const query = filtersHandler.transformQuery()
             const count = await collectionHandler.getCount(query)
             const documents = await collection.find(query).limit(limit || perPage).skip(skip).exec()
             const parsedDocuments = documents.map(document => document.toJSON())
 
-            commit('setList', { results: parsedDocuments, increment, count })
-            commit('setErrors', { model: 'onFetchList' })
-
-            return {
+            const response = {
               data: {
                 results: parsedDocuments,
                 fields: fieldsWithRelationOptions,
                 status: { code: 200 }
               }
             }
+
+            const fetchListSuccessResult = (await fetchListSuccess && fetchListSuccess(response)) || {}
+
+            commit('setList', { results: fetchListSuccessResult.results || parsedDocuments, increment, count })
+            commit('setErrors', { model: 'onFetchList' })
+
+            return fetchListSuccess && fetchListSuccessResult || response
           } catch (error) {
             commit('setErrors', { model: 'onFetchList', hasError: true })
-            throw error
+            throw fetchListError && fetchListError(error) || error
           }
         },
 
