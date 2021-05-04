@@ -41,10 +41,12 @@ export default class VuexOffline {
       fetchSingleError,
 
       // save
+      beforeSave,
       saveSuccess,
       saveError,
 
       // create
+      beforeCreate,
       createSuccess,
       createError
     } = options.middlewares || {}
@@ -82,7 +84,9 @@ export default class VuexOffline {
           )
         })
 
-        const parsedDocument = await document.update({ $set: { ...payload } })
+        const beforeSaveResult = await beforeSave && beforeSave(payload)
+        const parsedDocument = await document.update({ $set: beforeSaveResult || payload })
+
         const response = {
           data: {
             result: parsedDocument,
@@ -188,7 +192,8 @@ export default class VuexOffline {
               )
             })
 
-            const document = await collection.insert(documentToBeInserted)
+            const beforeCreateResult = await beforeCreate && beforeCreate(documentToBeInserted)
+            const document = await collection.insert(beforeCreateResult || documentToBeInserted)
             const parsedDocument = document.toJSON()
 
             const response = {

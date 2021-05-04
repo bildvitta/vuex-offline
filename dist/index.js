@@ -1058,8 +1058,10 @@
               fetchSingleSuccess,
               fetchSingleFormSuccess,
               fetchSingleError,
+              beforeSave,
               saveSuccess,
               saveError,
+              beforeCreate,
               createSuccess,
               createError,
               idAttribute,
@@ -1092,7 +1094,7 @@
 
                 case 3:
                   // middlewares
-                  _ref = options.middlewares || {}, fetchListQuery = _ref.fetchListQuery, fetchListSuccess = _ref.fetchListSuccess, fetchListError = _ref.fetchListError, _ref.fetchFiltersSuccess, _ref.fetchFiltersError, fetchSingleSuccess = _ref.fetchSingleSuccess, fetchSingleFormSuccess = _ref.fetchSingleFormSuccess, fetchSingleError = _ref.fetchSingleError, saveSuccess = _ref.saveSuccess, saveError = _ref.saveError, createSuccess = _ref.createSuccess, createError = _ref.createError;
+                  _ref = options.middlewares || {}, fetchListQuery = _ref.fetchListQuery, fetchListSuccess = _ref.fetchListSuccess, fetchListError = _ref.fetchListError, _ref.fetchFiltersSuccess, _ref.fetchFiltersError, fetchSingleSuccess = _ref.fetchSingleSuccess, fetchSingleFormSuccess = _ref.fetchSingleFormSuccess, fetchSingleError = _ref.fetchSingleError, beforeSave = _ref.beforeSave, saveSuccess = _ref.saveSuccess, saveError = _ref.saveError, beforeCreate = _ref.beforeCreate, createSuccess = _ref.createSuccess, createError = _ref.createError;
                   idAttribute = options.idAttribute || this.idAttribute || 'uuid';
                   perPage = options.perPage || 12;
                   collection = this.databaseSetup.collections[collectionName];
@@ -1111,6 +1113,7 @@
                           id,
                           model,
                           document,
+                          beforeSaveResult,
                           parsedDocument,
                           response,
                           saveSuccessResult,
@@ -1146,11 +1149,26 @@
                                 payload[nestedField.field.name] = nested.handler(payload[nestedField.field.name]);
                               });
                               _context.next = 10;
-                              return document.update({
-                                $set: _objectSpread2({}, payload)
-                              });
+                              return beforeSave;
 
                             case 10:
+                              _context.t0 = _context.sent;
+
+                              if (!_context.t0) {
+                                _context.next = 13;
+                                break;
+                              }
+
+                              _context.t0 = beforeSave(payload);
+
+                            case 13:
+                              beforeSaveResult = _context.t0;
+                              _context.next = 16;
+                              return document.update({
+                                $set: beforeSaveResult || payload
+                              });
+
+                            case 16:
                               parsedDocument = _context.sent;
                               response = {
                                 data: {
@@ -1160,52 +1178,52 @@
                                   }
                                 }
                               };
-                              _context.next = 14;
+                              _context.next = 20;
                               return saveSuccess;
 
-                            case 14:
-                              _context.t1 = _context.sent;
-
-                              if (!_context.t1) {
-                                _context.next = 17;
-                                break;
-                              }
-
-                              _context.t1 = saveSuccess(response);
-
-                            case 17:
-                              _context.t0 = _context.t1;
-
-                              if (_context.t0) {
-                                _context.next = 20;
-                                break;
-                              }
-
-                              _context.t0 = {};
-
                             case 20:
-                              saveSuccessResult = _context.t0;
+                              _context.t2 = _context.sent;
+
+                              if (!_context.t2) {
+                                _context.next = 23;
+                                break;
+                              }
+
+                              _context.t2 = saveSuccess(response);
+
+                            case 23:
+                              _context.t1 = _context.t2;
+
+                              if (_context.t1) {
+                                _context.next = 26;
+                                break;
+                              }
+
+                              _context.t1 = {};
+
+                            case 26:
+                              saveSuccessResult = _context.t1;
                               commit('setErrors', {
                                 model: model
                               });
                               commit('replaceItem', saveSuccessResult.result || parsedDocument.toJSON());
                               return _context.abrupt("return", saveSuccess && saveSuccessResult || response);
 
-                            case 26:
-                              _context.prev = 26;
-                              _context.t2 = _context["catch"](2);
+                            case 32:
+                              _context.prev = 32;
+                              _context.t3 = _context["catch"](2);
                               commit('setErrors', {
                                 model: model,
                                 hasError: true
                               });
-                              throw saveError && saveError(_context.t2) || new _default$7(_context.t2, collection);
+                              throw saveError && saveError(_context.t3) || new _default$7(_context.t3, collection);
 
-                            case 30:
+                            case 36:
                             case "end":
                               return _context.stop();
                           }
                         }
-                      }, _callee, null, [[2, 26]]);
+                      }, _callee, null, [[2, 32]]);
                     }));
 
                     return function save(_x2) {
@@ -1288,7 +1306,7 @@
                     actions: {
                       create: function () {
                         var _create = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2(_ref6, _ref7) {
-                          var commit, payload, uuid, documentToBeInserted, dateNow, document, parsedDocument, response, createSuccessResult;
+                          var commit, payload, uuid, documentToBeInserted, dateNow, beforeCreateResult, document, parsedDocument, response, createSuccessResult;
                           return regeneratorRuntime.wrap(function _callee2$(_context2) {
                             while (1) {
                               switch (_context2.prev = _context2.next) {
@@ -1314,9 +1332,24 @@
                                     documentToBeInserted[nestedField.field.name] = nested.handler(documentToBeInserted[nestedField.field.name]);
                                   });
                                   _context2.next = 11;
-                                  return collection.insert(documentToBeInserted);
+                                  return beforeCreate;
 
                                 case 11:
+                                  _context2.t0 = _context2.sent;
+
+                                  if (!_context2.t0) {
+                                    _context2.next = 14;
+                                    break;
+                                  }
+
+                                  _context2.t0 = beforeCreate(documentToBeInserted);
+
+                                case 14:
+                                  beforeCreateResult = _context2.t0;
+                                  _context2.next = 17;
+                                  return collection.insert(beforeCreateResult || documentToBeInserted);
+
+                                case 17:
                                   document = _context2.sent;
                                   parsedDocument = document.toJSON();
                                   response = {
@@ -1327,52 +1360,52 @@
                                       }
                                     }
                                   };
-                                  _context2.next = 16;
+                                  _context2.next = 22;
                                   return createSuccess;
 
-                                case 16:
-                                  _context2.t1 = _context2.sent;
-
-                                  if (!_context2.t1) {
-                                    _context2.next = 19;
-                                    break;
-                                  }
-
-                                  _context2.t1 = createSuccess(response);
-
-                                case 19:
-                                  _context2.t0 = _context2.t1;
-
-                                  if (_context2.t0) {
-                                    _context2.next = 22;
-                                    break;
-                                  }
-
-                                  _context2.t0 = {};
-
                                 case 22:
-                                  createSuccessResult = _context2.t0;
+                                  _context2.t2 = _context2.sent;
+
+                                  if (!_context2.t2) {
+                                    _context2.next = 25;
+                                    break;
+                                  }
+
+                                  _context2.t2 = createSuccess(response);
+
+                                case 25:
+                                  _context2.t1 = _context2.t2;
+
+                                  if (_context2.t1) {
+                                    _context2.next = 28;
+                                    break;
+                                  }
+
+                                  _context2.t1 = {};
+
+                                case 28:
+                                  createSuccessResult = _context2.t1;
                                   commit('setErrors', {
                                     model: 'onCreate'
                                   });
                                   commit('setItemList', createSuccessResult.metadata || parsedDocument);
                                   return _context2.abrupt("return", createSuccess && createSuccessResult || response);
 
-                                case 28:
-                                  _context2.prev = 28;
-                                  _context2.t2 = _context2["catch"](2);
+                                case 34:
+                                  _context2.prev = 34;
+                                  _context2.t3 = _context2["catch"](2);
                                   commit('setErrors', {
                                     model: 'onCreate',
                                     hasError: true
                                   });
-                                  throw createError && createError(_context2.t2) || new _default$7(_context2.t2, collection);
+                                  throw createError && createError(_context2.t3) || new _default$7(_context2.t3, collection);
 
-                                case 32:
+                                case 38:
                                 case "end":
                                   return _context2.stop();
                               }
                             }
-                          }, _callee2, null, [[2, 28]]);
+                          }, _callee2, null, [[2, 34]]);
                         }));
 
                         function create(_x3, _x4) {
