@@ -7,10 +7,15 @@ import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election'
 import { RxDBUpdatePlugin } from 'rxdb/plugins/update'
 
 import { actions, getters, mutations, state } from './module/index.js'
-import nestField from './utils/nestField.js'
 
-export * from './defaults/index.js'
-export { nestField }
+import { nestField } from './utils/index.js'
+import { createDateTime, createUUID } from './defaults/index.js'
+
+export {
+  createDateTime,
+  createUUID,
+  nestField
+}
 
 export default class {
   constructor (options = {}) {

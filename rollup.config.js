@@ -3,11 +3,22 @@ import remove from 'rollup-plugin-delete'
 import { terser } from 'rollup-plugin-terser'
 
 const options = {
-  format: 'umd',
-  name: 'VuexOffline'
+  format: 'esm',
+  exports: 'named'
 }
 
 export default {
+  external: [
+    'rxdb/plugins/core',
+    'rxdb/plugins/validate',
+    'rxdb/plugins/query-builder',
+    'rxdb/plugins/migration',
+    'rxdb/plugins/replication',
+    'rxdb/plugins/leader-election',
+    'rxdb/plugins/update',
+    'rxdb/dist/es/rx-error.js'
+  ],
+
   input: './src/index.js',
 
   output: [
