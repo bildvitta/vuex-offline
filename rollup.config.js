@@ -8,16 +8,23 @@ const options = {
 }
 
 export default {
-  input: './index.js',
+  input: './src/index.js',
 
   output: [
-    { file: 'dist/index.js', ...options },
-    { file: 'dist/index.min.js', sourcemap: true, ...options }
+    {
+      file: 'dist/index.js',
+      ...options
+    },
+    {
+      file: 'dist/index.min.js',
+      plugins: [terser()],
+      sourcemap: true,
+      ...options
+    }
   ],
 
   plugins: [
     remove({ targets: 'dist/*' }),
-    babel({ exclude: 'node_modules/**' }),
-    terser({ include: [/^.+\.min\.js$/] })
+    babel({ exclude: 'node_modules/**' })
   ]
 }
