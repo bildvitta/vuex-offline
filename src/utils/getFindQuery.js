@@ -28,8 +28,6 @@ export default function (moduleFilters = {}, { filters, search }) {
     )
   }
 
-  console.log(filtersQuery)
-
   return {
     selector: { ...filtersQuery }
   }

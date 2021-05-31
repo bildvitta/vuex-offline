@@ -446,7 +446,6 @@
       });
     }
 
-    console.log(filtersQuery);
     return {
       selector: _objectSpread2({}, filtersQuery)
     };
