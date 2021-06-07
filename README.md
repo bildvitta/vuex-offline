@@ -8,8 +8,14 @@ VuexOffline is a generic Vuex store module for working offline with [rxDB](https
 $ npm i @bildvitta/vuex-offline
 ```
 
+Inside your Vuex definition commonly inside `index.js`
+
 ```js
 import VuexOffline, { createUUID, createDateTime } from 'vuex-offline'
+
+import users from 'path-to-users'
+import posts from 'path-to-posts'
+import categories from 'path-to-categories'
 
 const offline = new VuexOffline({
   idKey: 'uuid',
@@ -27,16 +33,30 @@ const offline = new VuexOffline({
 
 await offline.createDatabase()
 await offline.setupCollections()
-```
 
-In your Vuex definition, import store modules:
-
-```js
 new Vuex.Store({
   modules: {
     ...offline.getStoreModules()
   }
 })
+```
+
+## VuexOffline API methods
+
+```js
+const vuexOffline = new VuexOffline(config)
+
+await vuexOffline.createDatabase() // create the database
+
+await vuexOffline.setupCollections() // setup collection
+
+vuexOffline.getStoreModules() // return all store modules for vuex
+
+vuexOffline.destroyDatabase() // destroy database
+
+vuexOffline.getCollections() // return all collections
+
+vuexOffline.getCollectionByName('users') // return single collection based on name
 ```
 
 ## Module default
