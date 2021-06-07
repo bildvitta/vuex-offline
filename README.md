@@ -1,6 +1,6 @@
 # Vuex Offline
 
-VuexOffline is a generic Vuex store module for working offline with rxDB.
+VuexOffline is a generic Vuex store module for working offline with [rxDB](https://rxdb.info/).
 
 ## Install
 
