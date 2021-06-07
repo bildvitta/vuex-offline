@@ -194,7 +194,7 @@ export default {
         type: 'text',
         label: 'E-mail'
       }
-    }
+    },
 
     queryOperators: { // check mangoquery docs https://github.com/cloudant/mango
       email: '$eq',
