@@ -154,7 +154,7 @@ export default {
   // Defaults
   defaults: {
     uuid: createUUID, // field "uuid" will have random uuid
-    createdAt: createDateTime // field "createdAt" will have parsed date now value
+    createdAt: createDateTime, // field "createdAt" will have parsed date now value
     updatedAt: createDateTime // field "updatedAt" will have parsed date now value
   },
 
@@ -222,12 +222,6 @@ export default {
     },
 
     search: ['name'] // it will search for field "name"
-  },
-
-  // Vuex
-  actions: {},
-  getters: {},
-  mutations: {},
-  state: {},
+  }
 }
 ```
