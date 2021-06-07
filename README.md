@@ -1,5 +1,7 @@
 # Vuex Offline
 
+VuexOffline is a generic Vuex store module for working offline with rxDB.
+
 ## Install
 
 ```bash
