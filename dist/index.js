@@ -1142,11 +1142,6 @@ var _default = /*#__PURE__*/function () {
                 try {
                   for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
                     _module = _step2.value;
-                    _module.onInitializeDB && _module.onInitializeDB({
-                      collections: this.collections,
-                      collection: this.collections[_module.name],
-                      database: this.database
-                    });
                     this.storeModules[_module.name] = this.createStoreModule(_module);
                   }
                 } catch (err) {

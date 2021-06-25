@@ -102,12 +102,6 @@ export default class {
     this.collections = await this.database.addCollections(collections)
 
     for (const module of this.modules) {
-      module.onInitializeDB && module.onInitializeDB({
-        collections: this.collections,
-        collection: this.collections[module.name],
-        database: this.database
-      })
-
       this.storeModules[module.name] = this.createStoreModule(module)
     }
   }
