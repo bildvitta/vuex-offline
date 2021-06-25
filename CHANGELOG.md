@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - exported `PouchDB` from `rxdb` to our plugin.
 - exported `(find, findOne, database)` to our plugin.
 - added new plugin `pouchdb-adapter-http` for sync.
-- added actions from module.
+- added vuex actions from module.
 
 ### Changed
 - changed search regex query.
