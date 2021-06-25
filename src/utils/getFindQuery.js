@@ -24,7 +24,7 @@ export default function (moduleFilters = {}, { filters, search }) {
 
   if (search) {
     filtersQuery.$or = (searchFilter || []).map(
-      item => ({ [item]: { $regex: new RegExp(`^${search}$`, 'i') } })
+      item => ({ [item]: { $regex: new RegExp(search, 'gi') } })
     )
   }
 

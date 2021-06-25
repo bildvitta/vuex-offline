@@ -1,4 +1,5 @@
 import { addRxPlugin, createRxDatabase } from 'rxdb/plugins/core';
+export { PouchDB } from 'rxdb/plugins/core';
 import { RxDBValidatePlugin } from 'rxdb/plugins/validate';
 import { RxDBQueryBuilderPlugin } from 'rxdb/plugins/query-builder';
 import { RxDBMigrationPlugin } from 'rxdb/plugins/migration';
@@ -43,6 +44,22 @@ function _objectSpread2(target) {
   }
 
   return target;
+}
+
+function _typeof(obj) {
+  "@babel/helpers - typeof";
+
+  if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
+    _typeof = function (obj) {
+      return typeof obj;
+    };
+  } else {
+    _typeof = function (obj) {
+      return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+    };
+  }
+
+  return _typeof(obj);
 }
 
 function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
@@ -208,6 +225,35 @@ function _createForOfIteratorHelper(o, allowArrayLike) {
   };
 }
 
+/**
+ * @param {string} name
+ * @param {object} query={object}
+ * @returns {promise}
+ * @example find('users', { isActive: true })
+ */
+
+function find (name) {
+  var query = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+  return database.collections[name].find({
+    selector: query
+  }).exec();
+}
+
+/**
+ * @param {string} name
+ * @param {object | string} query={object | string}
+ * @returns {promise}
+ * @example findOne('users', 'my_uuid')
+ */
+
+function findOne (name) {
+  var query = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+  var queryParam = _typeof(query) === 'object' ? {
+    selector: query
+  } : query;
+  return database.collections[name].findOne(queryParam).exec();
+}
+
 function formatResponse (response) {
   return {
     data: _objectSpread2({
@@ -224,6 +270,7 @@ var ptBR = {
   // 'has additional items': '',
   'must be FORMAT format': 'Este campo precisa ser FORMAT.',
   'must be unique': 'Já existe um registro com este valor.',
+  'must be date-time format': 'Data invalida.',
   // 'must be an enum value': '',
   // 'dependencies not set': '',
   // 'has additional properties': '',
@@ -448,7 +495,7 @@ function getFindQuery () {
   if (search) {
     filtersQuery.$or = (searchFilter || []).map(function (item) {
       return _defineProperty({}, item, {
-        $regex: new RegExp("^".concat(search, "$"), 'i')
+        $regex: new RegExp(search, 'gi')
       });
     });
   }
@@ -979,6 +1026,8 @@ function createUUID () {
   });
 }
 
+var database = null;
+
 var _default = /*#__PURE__*/function () {
   function _default() {
     var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
@@ -1025,7 +1074,7 @@ var _default = /*#__PURE__*/function () {
               case 0:
                 // Custom Build
                 // https://rxdb.info/custom-build.html
-                this.addDatabasePlugin(RxDBValidatePlugin, RxDBQueryBuilderPlugin, RxDBMigrationPlugin, RxDBReplicationPlugin, RxDBLeaderElectionPlugin, RxDBUpdatePlugin, require('pouchdb-adapter-idb'));
+                this.addDatabasePlugin(RxDBValidatePlugin, RxDBQueryBuilderPlugin, RxDBMigrationPlugin, RxDBReplicationPlugin, RxDBLeaderElectionPlugin, RxDBUpdatePlugin, require('pouchdb-adapter-http'), require('pouchdb-adapter-idb'));
 
                 if (process.env.DEBUGGING) {
                   this.addDatabasePlugin(require('rxdb/plugins/dev-mode').RxDBDevModePlugin);
@@ -1038,8 +1087,9 @@ var _default = /*#__PURE__*/function () {
 
               case 4:
                 this.database = _context.sent;
+                database = this.database;
 
-              case 5:
+              case 6:
               case "end":
                 return _context.stop();
             }
@@ -1092,6 +1142,11 @@ var _default = /*#__PURE__*/function () {
                 try {
                   for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
                     _module = _step2.value;
+                    _module.onInitializeDB && _module.onInitializeDB({
+                      collections: this.collections,
+                      collection: this.collections[_module.name],
+                      database: this.database
+                    });
                     this.storeModules[_module.name] = this.createStoreModule(_module);
                   }
                 } catch (err) {
@@ -1156,7 +1211,7 @@ var _default = /*#__PURE__*/function () {
       var params = [module, collection];
       return {
         namespaced: true,
-        actions: {
+        actions: _objectSpread2({
           create: has('CREATE') && actions.create.apply(actions, params),
           destroy: has('DESTROY') && actions.destroy.apply(actions, params),
           fetchFilters: has('FETCH_FILTERS') && actions.fetchFilters.apply(actions, params),
@@ -1164,7 +1219,7 @@ var _default = /*#__PURE__*/function () {
           fetchSingle: has('FETCH_SINGLE') && actions.fetchSingle.apply(actions, params),
           replace: has('REPLACE') && actions.replace.apply(actions, params),
           update: has('UPDATE') && actions.update.apply(actions, params)
-        },
+        }, module.actions),
         getters: getters.apply(void 0, params),
         mutations: mutations.apply(void 0, params),
         state: state.apply(void 0, params)
@@ -1191,4 +1246,4 @@ var _default = /*#__PURE__*/function () {
 }();
 
 export default _default;
-export { createDateTime, createUUID, nestField };
+export { createDateTime, createUUID, database, find, findOne, nestField };

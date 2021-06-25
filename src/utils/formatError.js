@@ -8,6 +8,7 @@ const ptBR = {
   // 'has additional items': '',
   'must be FORMAT format': 'Este campo precisa ser FORMAT.',
   'must be unique': 'Já existe um registro com este valor.',
+  'must be date-time format': 'Data invalida.',
   // 'must be an enum value': '',
   // 'dependencies not set': '',
   // 'has additional properties': '',
