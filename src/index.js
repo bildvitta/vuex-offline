@@ -1,4 +1,4 @@
-import { addRxPlugin, createRxDatabase } from 'rxdb/plugins/core'
+import { addRxPlugin, createRxDatabase, PouchDB } from 'rxdb/plugins/core'
 import { RxDBValidatePlugin } from 'rxdb/plugins/validate'
 import { RxDBQueryBuilderPlugin } from 'rxdb/plugins/query-builder'
 import { RxDBMigrationPlugin } from 'rxdb/plugins/migration'
@@ -8,14 +8,10 @@ import { RxDBUpdatePlugin } from 'rxdb/plugins/update'
 
 import { actions, getters, mutations, state } from './module/index.js'
 
-import { nestField } from './utils/index.js'
+import { find, findOne, nestField } from './utils/index.js'
 import { createDateTime, createUUID } from './defaults/index.js'
 
-export {
-  createDateTime,
-  createUUID,
-  nestField
-}
+let database = null
 
 export default class {
   constructor (options = {}) {
@@ -74,6 +70,7 @@ export default class {
       RxDBLeaderElectionPlugin,
       RxDBUpdatePlugin,
 
+      require('pouchdb-adapter-http'),
       require('pouchdb-adapter-idb')
     )
 
@@ -87,6 +84,8 @@ export default class {
       adapter: 'idb',
       ...this.databaseOptions
     })
+
+    database = this.database
   }
 
   destroyDatabase () {
@@ -144,7 +143,8 @@ export default class {
         fetchList: has('FETCH_LIST') && actions.fetchList(...params),
         fetchSingle: has('FETCH_SINGLE') && actions.fetchSingle(...params),
         replace: has('REPLACE') && actions.replace(...params),
-        update: has('UPDATE') && actions.update(...params)
+        update: has('UPDATE') && actions.update(...params),
+        ...module.actions
       },
 
       getters: getters(...params),
@@ -164,4 +164,14 @@ export default class {
   getStoreModules () {
     return this.storeModules
   }
+}
+
+export {
+  createDateTime,
+  createUUID,
+  database,
+  find,
+  findOne,
+  nestField,
+  PouchDB
 }

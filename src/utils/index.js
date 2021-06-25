@@ -1,3 +1,5 @@
+import find from './find.js'
+import findOne from './findOne.js'
 import formatError from './formatError.js'
 import formatResponse from './formatResponse.js'
 import getFieldsByType from './getFieldsByType.js'
@@ -11,6 +13,8 @@ import setOptions from './setOptions.js'
 import statusResponse from './statusResponse.js'
 
 export {
+  find,
+  findOne,
   formatError,
   formatResponse,
   getFieldsByType,
