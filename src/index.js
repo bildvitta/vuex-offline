@@ -23,6 +23,7 @@ export default class {
     this.databaseOptions = options.database
 
     this.idKey = options.idKey || 'id'
+    this.sync = options.sync
     this.perPage = options.perPage || 12
 
     this.collections = {}
@@ -163,6 +164,46 @@ export default class {
 
   getStoreModules () {
     return this.storeModules
+  }
+
+  async makeSync (collectionsToSync) {
+    const defaultOptions = {
+      // waitForLeadership: true,
+      waitForLeadership: false,
+      direction: {
+        pull: true,
+        push: true
+      },
+      options: {
+        // live: true,
+        retry: true
+      }
+    }
+    
+    const promises = await collectionsToSync.map(async collectionName => {
+      const moduleByName = this.modules.find(module => module.name === collectionName)
+      const moduleOptions = (moduleByName.sync && moduleByName.sync.options) || {}
+      const syncOptions = { ...defaultOptions, ...this.sync, ...moduleOptions, }
+
+      if (!syncOptions.baseURL) {
+        throw new Error('baseURL is required to sync.')
+      }
+
+      const syncState = await this.collections[collectionName].sync({
+        ...syncOptions,
+        remote: `${syncOptions.baseURL}/couchdb/${collectionName}`
+      })
+
+      if (moduleByName.sync && moduleByName.sync.handler) {
+        moduleByName.sync.handler(syncState)
+      }
+
+      syncState.change$.subscribe(change => console.log(change, `<-------- change ${collectionName}`))
+
+      return syncState.awaitInitialReplication()
+    })
+
+    return await Promise.all(promises)
   }
 }
 
