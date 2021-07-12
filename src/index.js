@@ -168,14 +168,12 @@ export default class {
 
   async makeSync (collectionsToSync) {
     const defaultOptions = {
-      // waitForLeadership: true,
       waitForLeadership: false,
       direction: {
         pull: true,
         push: true
       },
       options: {
-        // live: true,
         retry: true
       }
     }
