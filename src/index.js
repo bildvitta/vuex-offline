@@ -201,8 +201,7 @@ export default class {
       }
 
       if (this.sync.progress) {
-        syncState.change$.subscribe(({ change }) => {
-  
+        syncState.change$.subscribe(({ change }) => {  
           if (!totalPendingByCollection[collectionIndex]) {
             totalPendingByCollection[collectionIndex] = change.pending + change.docs_read
           }
