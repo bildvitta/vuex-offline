@@ -179,11 +179,13 @@ export default class {
         retry: true
       }
     }
-    
-    const promises = await collectionsToSync.map(async collectionName => {
+    let progressByCollection = []
+    let totalPendingByCollection = []
+
+    const promises = await collectionsToSync.map(async (collectionName, collectionIndex) => {
       const moduleByName = this.modules.find(module => module.name === collectionName)
       const moduleOptions = (moduleByName.sync && moduleByName.sync.options) || {}
-      const syncOptions = { ...defaultOptions, ...this.sync, ...moduleOptions, }
+      const syncOptions = { ...defaultOptions, ...this.sync.options, ...moduleOptions, }
 
       if (!syncOptions.baseURL) {
         throw new Error('baseURL is required to sync.')
@@ -198,7 +200,23 @@ export default class {
         moduleByName.sync.handler(syncState)
       }
 
-      syncState.change$.subscribe(change => console.log(change, `<-------- change ${collectionName}`))
+      if (this.sync.progress) {
+        syncState.change$.subscribe(({ change }) => {
+  
+          if (!totalPendingByCollection[collectionIndex]) {
+            totalPendingByCollection[collectionIndex] = change.pending + change.docs_read
+          }
+  
+          progressByCollection[collectionIndex] = change.docs_read
+          
+          const total = totalPendingByCollection.reduce((accumulator, currentValue) => accumulator + currentValue)
+          const progress = progressByCollection.reduce((accumulator, currentValue) => accumulator + currentValue)
+
+          const progressPercentage = Math.round((100 * progress) / total)
+
+          this.sync.progress(progressPercentage)
+        })
+      }
 
       return syncState.awaitInitialReplication()
     })
