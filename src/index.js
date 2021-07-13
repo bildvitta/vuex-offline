@@ -219,7 +219,9 @@ export default class {
       return syncState.awaitInitialReplication()
     })
 
-    return await Promise.all(promises)
+    await Promise.all(promises)
+
+    return
   }
 }
 
