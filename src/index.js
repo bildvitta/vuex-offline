@@ -177,13 +177,14 @@ export default class {
         retry: true
       }
     }
-    let progressByCollection = []
-    let totalPendingByCollection = []
+  
+    const progressByCollection = []
+    const totalPendingByCollection = []
 
     const promises = await collectionsToSync.map(async (collectionName, collectionIndex) => {
       const moduleByName = this.modules.find(module => module.name === collectionName)
       const moduleOptions = (moduleByName.sync && moduleByName.sync.options) || {}
-      const syncOptions = { ...defaultOptions, ...this.sync.options, ...moduleOptions, }
+      const syncOptions = { ...defaultOptions, ...this.sync.options, ...moduleOptions }
 
       if (!syncOptions.baseURL) {
         throw new Error('baseURL is required to sync.')

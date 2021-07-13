@@ -7,9 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 # Unreleased
 
 ### Added
-- exported function `MakeSync` to synchronize database data.
-- pass custom sync options through the module.
-- pass custom sync options through the vuex-offline constructor.
+- exported function `MakeSync` to synchronize database.
+- send custom sync options through the module.
+- send custom sync options through the vuex-offline constructor.
 - added handler function in module to intercept synchronization.
 - added function in constructor to get sync progress.
 - possibility to change model to filter in `getFindQuery` helper.
