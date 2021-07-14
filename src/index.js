@@ -166,22 +166,23 @@ export default class {
     return this.storeModules
   }
 
-  async makeSync (collectionsToSync) {
+  makeSync (collectionsToSync) {
     const defaultOptions = {
-      waitForLeadership: false,
+      waitForLeadership: true,
       direction: {
         pull: true,
         push: true
       },
       options: {
-        retry: true
+        retry: true,
+        live: true
       }
     }
   
     const progressByCollection = []
     const totalPendingByCollection = []
 
-    const promises = await collectionsToSync.map(async (collectionName, collectionIndex) => {
+    collectionsToSync.map(async (collectionName, collectionIndex) => {
       const moduleByName = this.modules.find(module => module.name === collectionName)
       const moduleOptions = (moduleByName.sync && moduleByName.sync.options) || {}
       const syncOptions = { ...defaultOptions, ...this.sync.options, ...moduleOptions }
@@ -202,13 +203,7 @@ export default class {
       if (this.sync.progress) {
         this.calculateSyncProgress(syncState, progressByCollection, totalPendingByCollection, collectionIndex)
       }
-
-      return syncState.awaitInitialReplication()
     })
-
-    await Promise.all(promises)
-
-    return
   }
 
   calculateSyncProgress (syncState, progressByCollection, totalPendingByCollection, collectionIndex) {
@@ -223,6 +218,11 @@ export default class {
       const progress = progressByCollection.reduce((accumulator, currentValue) => accumulator + currentValue)
 
       const progressPercentage = Math.round((100 * progress) / total)
+
+      if (!change.pending) {
+        totalPendingByCollection.splice(collectionIndex, 1)
+        progressByCollection.splice(collectionIndex, 1)
+      }
 
       this.sync.progress(progressPercentage)
     })
