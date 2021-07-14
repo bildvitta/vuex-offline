@@ -200,20 +200,7 @@ export default class {
       }
 
       if (this.sync.progress) {
-        syncState.change$.subscribe(({ change }) => {  
-          if (!totalPendingByCollection[collectionIndex]) {
-            totalPendingByCollection[collectionIndex] = change.pending + change.docs_read
-          }
-  
-          progressByCollection[collectionIndex] = change.docs_read
-          
-          const total = totalPendingByCollection.reduce((accumulator, currentValue) => accumulator + currentValue)
-          const progress = progressByCollection.reduce((accumulator, currentValue) => accumulator + currentValue)
-
-          const progressPercentage = Math.round((100 * progress) / total)
-
-          this.sync.progress(progressPercentage)
-        })
+        this.calculateSyncProgress(syncState, progressByCollection, totalPendingByCollection, collectionIndex)
       }
 
       return syncState.awaitInitialReplication()
@@ -222,6 +209,23 @@ export default class {
     await Promise.all(promises)
 
     return
+  }
+
+  calculateSyncProgress (syncState, progressByCollection, totalPendingByCollection, collectionIndex) {
+    syncState.change$.subscribe(({ change }) => {  
+      if (!totalPendingByCollection[collectionIndex]) {
+        totalPendingByCollection[collectionIndex] = change.pending + change.docs_read
+      }
+
+      progressByCollection[collectionIndex] = change.docs_read
+      
+      const total = totalPendingByCollection.reduce((accumulator, currentValue) => accumulator + currentValue)
+      const progress = progressByCollection.reduce((accumulator, currentValue) => accumulator + currentValue)
+
+      const progressPercentage = Math.round((100 * progress) / total)
+
+      this.sync.progress(progressPercentage)
+    })
   }
 }
 
