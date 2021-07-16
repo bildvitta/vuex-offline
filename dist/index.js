@@ -1111,6 +1111,11 @@ var _default = /*#__PURE__*/function () {
       return this.database.destroy();
     }
   }, {
+    key: "removeDatabase",
+    value: function removeDatabase() {
+      return this.database.remove();
+    }
+  }, {
     key: "setupCollections",
     value: function () {
       var _setupCollections = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2() {
