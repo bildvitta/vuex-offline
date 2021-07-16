@@ -23,6 +23,7 @@ export default class {
     this.databaseOptions = options.database
 
     this.idKey = options.idKey || 'id'
+    this.sync = options.sync
     this.perPage = options.perPage || 12
 
     this.collections = {}
@@ -163,6 +164,85 @@ export default class {
 
   getStoreModules () {
     return this.storeModules
+  }
+
+  async makeSync (collections) {
+    const defaultOptions = {
+      waitForLeadership: true,
+      direction: {
+        pull: true,
+        push: true
+      },
+      options: {
+        retry: true,
+        live: true
+      }
+    }
+
+    const collectionsToSync = collections || Object.keys(this.collections)
+    const listDocumentsRead = []
+    const listTotalPending = []
+
+    const calculateSyncProgress = (syncState, listDocumentsRead, listTotalPending, collectionIndex, moduleByName) => {
+      syncState.change$.subscribe(({ change }) => {
+        if (this.sync.progress) {
+          if (!listTotalPending[collectionIndex]) {
+            listTotalPending[collectionIndex] = change.pending + change.docs_read
+          }
+    
+          listDocumentsRead[collectionIndex] = change.docs_read
+          
+          const total = sumList(listTotalPending)
+          const progress = sumList(listDocumentsRead)
+    
+          if (!change.pending) {
+            listTotalPending[collectionIndex] = 0
+            listDocumentsRead[collectionIndex] = 0
+          }
+  
+          this.sync.progress(Math.round((100 * progress) / total))
+        }
+  
+        if (moduleByName.sync && moduleByName.sync.progress) {
+          let totalPending = 0
+  
+          if (!totalPending) {
+            totalPending = change.pending + change.docs_read
+          }
+  
+          moduleByName.sync.progress(Math.round((100 * change.docs_read) / totalPending))
+        }
+      })
+    }
+
+    const sumList = (list) => {
+      return list.length ? list.reduce((accumulator, currentValue) => accumulator + currentValue) : list
+    }
+
+    for (const collectionIndex in collectionsToSync) {
+      const collectionName = collectionsToSync[collectionIndex]
+
+      const moduleByName = this.modules.find(module => module.name === collectionName)
+      const moduleOptions = (moduleByName.sync && moduleByName.sync.options) || {}
+      const syncOptions = { ...defaultOptions, ...this.sync.options, ...moduleOptions }
+
+      if (!syncOptions.baseURL) {
+        throw new Error('baseURL is required to sync.')
+      }
+
+      const syncState = await this.collections[collectionName].sync({
+        ...syncOptions,
+        remote: `${syncOptions.baseURL}/couchdb/${collectionName}`
+      })
+
+      if (moduleByName.sync && moduleByName.sync.handler) {
+        moduleByName.sync.handler(syncState)
+      }
+
+      if (this.sync.progress || (moduleByName.sync && moduleByName.sync.progress)) {
+        calculateSyncProgress(syncState, listDocumentsRead, listTotalPending, collectionIndex, moduleByName)
+      }
+    }
   }
 }
 

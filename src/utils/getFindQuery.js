@@ -13,8 +13,12 @@ export default function (moduleFilters = {}, { filters, search }) {
     }
 
     if (typeof queryOperator === 'function') {
-      const { value, operator } = queryOperator(filter) || {}
-      filtersQuery[name] = { [operator || '$regex']: parseJSON(value) }
+      const { value, operator, model } = queryOperator(filter) || {}
+
+      filtersQuery[model || name] = {
+        ...filtersQuery[model || name],
+        [operator || '$regex']: parseJSON(value) 
+      }
 
       continue
     }
