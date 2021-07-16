@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 # Unreleased
 
 ### Added
-- added function `removeDatabase` function.
+- added `removeDatabase` function.
 
 # 2.2.0 2021-07-16
 
