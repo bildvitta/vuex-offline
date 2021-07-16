@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - send custom sync options through the vuex-offline constructor.
 - added handler function in module to intercept synchronization.
 - added function in constructor to get sync progress.
+- added function in module to get the progress of collection synchronization.
 - possibility to change model to filter in `getFindQuery` helper.
 
 ### Fixed
