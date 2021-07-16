@@ -483,9 +483,10 @@ function getFindQuery () {
     if (typeof queryOperator === 'function') {
       var _ref2 = queryOperator(filter) || {},
           value = _ref2.value,
-          operator = _ref2.operator;
+          operator = _ref2.operator,
+          model = _ref2.model;
 
-      filtersQuery[name] = _defineProperty({}, operator || '$regex', parseJSON(value));
+      filtersQuery[model || name] = _objectSpread2(_objectSpread2({}, filtersQuery[model || name]), {}, _defineProperty({}, operator || '$regex', parseJSON(value)));
       continue;
     }
 
@@ -1041,6 +1042,7 @@ var _default = /*#__PURE__*/function () {
     this.database = null;
     this.databaseOptions = options.database;
     this.idKey = options.idKey || 'id';
+    this.sync = options.sync;
     this.perPage = options.perPage || 12;
     this.collections = {};
     this.modules = options.modules || [];
@@ -1235,6 +1237,145 @@ var _default = /*#__PURE__*/function () {
     value: function getStoreModules() {
       return this.storeModules;
     }
+  }, {
+    key: "makeSync",
+    value: function () {
+      var _makeSync = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee3(collections) {
+        var _this = this;
+
+        var defaultOptions, collectionsToSync, listDocumentsRead, listTotalPending, calculateSyncProgress, sumList, _loop, collectionIndex;
+
+        return regeneratorRuntime.wrap(function _callee3$(_context4) {
+          while (1) {
+            switch (_context4.prev = _context4.next) {
+              case 0:
+                defaultOptions = {
+                  waitForLeadership: true,
+                  direction: {
+                    pull: true,
+                    push: true
+                  },
+                  options: {
+                    retry: true,
+                    live: true
+                  }
+                };
+                collectionsToSync = collections || Object.keys(this.collections);
+                listDocumentsRead = [];
+                listTotalPending = [];
+
+                calculateSyncProgress = function calculateSyncProgress(syncState, listDocumentsRead, listTotalPending, collectionIndex, moduleByName) {
+                  syncState.change$.subscribe(function (_ref) {
+                    var change = _ref.change;
+
+                    if (_this.sync.progress) {
+                      if (!listTotalPending[collectionIndex]) {
+                        listTotalPending[collectionIndex] = change.pending + change.docs_read;
+                      }
+
+                      listDocumentsRead[collectionIndex] = change.docs_read;
+                      var total = sumList(listTotalPending);
+                      var progress = sumList(listDocumentsRead);
+
+                      if (!change.pending) {
+                        listTotalPending[collectionIndex] = 0;
+                        listDocumentsRead[collectionIndex] = 0;
+                      }
+
+                      _this.sync.progress(Math.round(100 * progress / total));
+                    }
+
+                    if (moduleByName.sync && moduleByName.sync.progress) {
+                      var totalPending = 0;
+
+                      if (!totalPending) {
+                        totalPending = change.pending + change.docs_read;
+                      }
+
+                      moduleByName.sync.progress(Math.round(100 * change.docs_read / totalPending));
+                    }
+                  });
+                };
+
+                sumList = function sumList(list) {
+                  return list.length ? list.reduce(function (accumulator, currentValue) {
+                    return accumulator + currentValue;
+                  }) : list;
+                };
+
+                _loop = /*#__PURE__*/regeneratorRuntime.mark(function _loop(collectionIndex) {
+                  var collectionName, moduleByName, moduleOptions, syncOptions, syncState;
+                  return regeneratorRuntime.wrap(function _loop$(_context3) {
+                    while (1) {
+                      switch (_context3.prev = _context3.next) {
+                        case 0:
+                          collectionName = collectionsToSync[collectionIndex];
+                          moduleByName = _this.modules.find(function (module) {
+                            return module.name === collectionName;
+                          });
+                          moduleOptions = moduleByName.sync && moduleByName.sync.options || {};
+                          syncOptions = _objectSpread2(_objectSpread2(_objectSpread2({}, defaultOptions), _this.sync.options), moduleOptions);
+
+                          if (syncOptions.baseURL) {
+                            _context3.next = 6;
+                            break;
+                          }
+
+                          throw new Error('baseURL is required to sync.');
+
+                        case 6:
+                          _context3.next = 8;
+                          return _this.collections[collectionName].sync(_objectSpread2(_objectSpread2({}, syncOptions), {}, {
+                            remote: "".concat(syncOptions.baseURL, "/couchdb/").concat(collectionName)
+                          }));
+
+                        case 8:
+                          syncState = _context3.sent;
+
+                          if (moduleByName.sync && moduleByName.sync.handler) {
+                            moduleByName.sync.handler(syncState);
+                          }
+
+                          if (_this.sync.progress || moduleByName.sync && moduleByName.sync.progress) {
+                            calculateSyncProgress(syncState, listDocumentsRead, listTotalPending, collectionIndex, moduleByName);
+                          }
+
+                        case 11:
+                        case "end":
+                          return _context3.stop();
+                      }
+                    }
+                  }, _loop);
+                });
+                _context4.t0 = regeneratorRuntime.keys(collectionsToSync);
+
+              case 8:
+                if ((_context4.t1 = _context4.t0()).done) {
+                  _context4.next = 13;
+                  break;
+                }
+
+                collectionIndex = _context4.t1.value;
+                return _context4.delegateYield(_loop(collectionIndex), "t2", 11);
+
+              case 11:
+                _context4.next = 8;
+                break;
+
+              case 13:
+              case "end":
+                return _context4.stop();
+            }
+          }
+        }, _callee3, this);
+      }));
+
+      function makeSync(_x) {
+        return _makeSync.apply(this, arguments);
+      }
+
+      return makeSync;
+    }()
   }]);
 
   return _default;
