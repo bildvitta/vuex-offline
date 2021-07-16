@@ -166,7 +166,7 @@ export default class {
     return this.storeModules
   }
 
-  makeSync (collections) {
+  async makeSync (collections) {
     const defaultOptions = {
       waitForLeadership: true,
       direction: {
@@ -183,7 +183,45 @@ export default class {
     const listDocumentsRead = []
     const listTotalPending = []
 
-    collectionsToSync.forEach(async (collectionName, collectionIndex) => {
+    const calculateSyncProgress = (syncState, listDocumentsRead, listTotalPending, collectionIndex, moduleByName) => {
+      syncState.change$.subscribe(({ change }) => {
+        if (this.sync.progress) {
+          if (!listTotalPending[collectionIndex]) {
+            listTotalPending[collectionIndex] = change.pending + change.docs_read
+          }
+    
+          listDocumentsRead[collectionIndex] = change.docs_read
+          
+          const total = sumList(listTotalPending)
+          const progress = sumList(listDocumentsRead)
+    
+          if (!change.pending) {
+            listTotalPending[collectionIndex] = 0
+            listDocumentsRead[collectionIndex] = 0
+          }
+  
+          this.sync.progress(Math.round((100 * progress) / total))
+        }
+  
+        if (moduleByName.sync && moduleByName.sync.progress) {
+          let totalPending = 0
+  
+          if (!totalPending) {
+            totalPending = change.pending + change.docs_read
+          }
+  
+          moduleByName.sync.progress(Math.round((100 * change.docs_read) / totalPending))
+        }
+      })
+    }
+
+    const sumList = (list) => {
+      return list.length ? list.reduce((accumulator, currentValue) => accumulator + currentValue) : list
+    }
+
+    for (const collectionIndex in collectionsToSync) {
+      const collectionName = collectionsToSync[collectionIndex]
+
       const moduleByName = this.modules.find(module => module.name === collectionName)
       const moduleOptions = (moduleByName.sync && moduleByName.sync.options) || {}
       const syncOptions = { ...defaultOptions, ...this.sync.options, ...moduleOptions }
@@ -202,46 +240,9 @@ export default class {
       }
 
       if (this.sync.progress || (moduleByName.sync && moduleByName.sync.progress)) {
-        this.calculateSyncProgress(syncState, listDocumentsRead, listTotalPending, collectionIndex, moduleByName)
+        calculateSyncProgress(syncState, listDocumentsRead, listTotalPending, collectionIndex, moduleByName)
       }
-    })
-  }
-
-  calculateSyncProgress (syncState, listDocumentsRead, listTotalPending, collectionIndex, moduleByName) {
-    syncState.change$.subscribe(({ change }) => {
-      if (this.sync.progress) {
-        if (!listTotalPending[collectionIndex]) {
-          listTotalPending[collectionIndex] = change.pending + change.docs_read
-        }
-  
-        listDocumentsRead[collectionIndex] = change.docs_read
-        
-        const total = this.sumList(listTotalPending)
-        const progress = this.sumList(listDocumentsRead)
-  
-        if (!change.pending) {
-          listTotalPending.splice(collectionIndex, 1)
-          listDocumentsRead.splice(collectionIndex, 1)
-        }
-
-        this.sync.progress(Math.round((100 * progress) / total))
-      }
-
-      if (moduleByName.sync && moduleByName.sync.progress) {
-        let totalPending = 0
-
-        if (!totalPending) {
-          totalPending = change.pending + change.docs_read
-        }
-
-        moduleByName.sync.progress(Math.round((100 * change.docs_read) / totalPending))
-      }
-
-    })
-  }
-
-  sumList (list) {
-    return list.length ? list.reduce((accumulator, currentValue) => accumulator + currentValue) : list
+    }
   }
 }
 
