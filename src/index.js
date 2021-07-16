@@ -93,6 +93,10 @@ export default class {
     return this.database.destroy()
   }
 
+  removeDatabase () {
+    return this.database.remove()
+  }
+
   async setupCollections () {
     const collections = {}
 
