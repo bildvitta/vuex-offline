@@ -188,8 +188,10 @@ export default class {
     const listTotalPending = []
 
     const calculateSyncProgress = (syncState, listDocumentsRead, listTotalPending, collectionIndex, moduleByName) => {
-      syncState.change$.subscribe(({ change }) => {
-        if (this.sync.progress) {
+      syncState.change$.subscribe(({ change, direction }) => {
+        const isPullDirection = direction === 'pull'
+
+        if (isPullDirection && this.sync.progress) {
           if (!listTotalPending[collectionIndex]) {
             listTotalPending[collectionIndex] = change.pending + change.docs_read
           }
@@ -207,7 +209,7 @@ export default class {
           this.sync.progress(Math.round((100 * progress) / total))
         }
   
-        if (moduleByName.sync && moduleByName.sync.progress) {
+        if (isPullDirection && moduleByName.sync && moduleByName.sync.progress) {
           let totalPending = 0
   
           if (!totalPending) {
