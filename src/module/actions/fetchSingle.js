@@ -6,7 +6,7 @@ import {
 
 export default function (module, collection) {
   return async function ({ commit }, { form, id }) {
-    const fields = await getFieldsWithRelationshipOptions(module)
+    const fields = await getFieldsWithRelationshipOptions({ ...module, form, id })
 
     if (form && !id) {
       return formatResponse({ fields })

@@ -10,11 +10,17 @@ export default function (module, collection) {
     { commit },
     { filters, findQuery, increment, limit, page = 1, search } = {}
   ) {
-    if (!findQuery) {
-      findQuery = getFindQuery(module.filters, { filters, search })
-    }
-
     try {
+      const { preQueryList } = module.interceptors || {}
+      const findParam = preQueryList ? preQueryList({ search, filters }) : findQuery || {}
+
+      if (!findQuery) {
+        findQuery = getFindQuery(module.filters, {
+          filters: findParam.filters || filters,
+          search: findParam.search || search
+        })
+      }
+
       const query = collection.find(findQuery).sort(module.sort)
       const documents = await query.exec()
 
@@ -31,6 +37,7 @@ export default function (module, collection) {
         results: documentsJSON
       })
     } catch (error) {
+      console.log(error, '<----- error')
       return error
     }
   }
