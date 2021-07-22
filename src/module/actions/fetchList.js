@@ -37,7 +37,6 @@ export default function (module, collection) {
         results: documentsJSON
       })
     } catch (error) {
-      console.log(error, '<----- error')
       return error
     }
   }
