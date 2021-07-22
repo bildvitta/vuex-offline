@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - added option to pass relationship in filters.
+- added `preQueryList` function to intercept queries.
+- added the possibility to have relationship of collections only for declared methods.
+
+### Fixed
+- calculate progress only when pulling data in sync.
 
 # 2.2.1 2021-07-16
 
