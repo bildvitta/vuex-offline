@@ -238,7 +238,7 @@ export default class {
 
       const syncState = await this.collections[collectionName].sync({
         ...syncOptions,
-        remote: `${syncOptions.baseURL}/couchdb/${collectionName}`
+        remote: `${syncOptions.baseURL}/${collectionName}`
       })
 
       if (moduleByName.sync && moduleByName.sync.handler) {

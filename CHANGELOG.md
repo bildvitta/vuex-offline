@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - added `preQueryList` function to intercept queries.
 - added the possibility to have relationship of collections only for declared methods.
 
+### Changed
+- changed base url in `makesync` function.
+
 ### Fixed
 - calculate progress only when pulling data in sync.
 
