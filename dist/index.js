@@ -373,28 +373,47 @@ function getFieldsWithRelationshipOptions (_x) {
 
 function _ref2() {
   _ref2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(_ref) {
-    var fields, idKey, parent, relationships, key, relationship, ref, documents, relKey, relRef, _documents;
+    var fields, idKey, parent, relationships, form, id, methodsModels, model, key, relationship, ref, methods, documents, relKey, relRef, _documents;
 
     return regeneratorRuntime.wrap(function _callee$(_context) {
       while (1) {
         switch (_context.prev = _context.next) {
           case 0:
-            fields = _ref.fields, idKey = _ref.idKey, parent = _ref.parent, relationships = _ref.relationships;
+            fields = _ref.fields, idKey = _ref.idKey, parent = _ref.parent, relationships = _ref.relationships, form = _ref.form, id = _ref.id;
             fields = JSON.parse(JSON.stringify(fields));
+            methodsModels = {
+              fetchList: !form && !id,
+              fetchSingleCreate: form && !id,
+              fetchSingleEdit: form && id,
+              fetchSingleShow: !form && id
+            }; // model with value true
+
+            model = Object.keys(methodsModels).find(function (item) {
+              return methodsModels[item];
+            });
             _context.t0 = regeneratorRuntime.keys(relationships);
 
-          case 3:
+          case 5:
             if ((_context.t1 = _context.t0()).done) {
-              _context.next = 27;
+              _context.next = 32;
               break;
             }
 
             key = _context.t1.value;
             relationship = relationships[key];
-            ref = relationship.ref;
+            ref = relationship.ref, methods = relationship.methods; // if there are methods, and it is not the current method returns empty options
 
+            if (!(methods && methods.length && !methods.includes(model))) {
+              _context.next = 12;
+              break;
+            }
+
+            fields[key].options = [];
+            return _context.abrupt("continue", 5);
+
+          case 12:
             if (!ref) {
-              _context.next = 15;
+              _context.next = 20;
               break;
             }
 
@@ -406,44 +425,44 @@ function _ref2() {
               relationship.value = idKey;
             }
 
-            _context.next = 12;
+            _context.next = 17;
             return parent.collections[ref].find().exec();
 
-          case 12:
+          case 17:
             documents = _context.sent;
             fields[key].options = setOptions(documents, relationship);
-            return _context.abrupt("continue", 3);
+            return _context.abrupt("continue", 5);
 
-          case 15:
+          case 20:
             _context.t2 = regeneratorRuntime.keys(relationship);
 
-          case 16:
+          case 21:
             if ((_context.t3 = _context.t2()).done) {
-              _context.next = 25;
+              _context.next = 30;
               break;
             }
 
             relKey = _context.t3.value;
             relRef = relationship[relKey].ref;
-            _context.next = 21;
+            _context.next = 26;
             return parent.collections[relRef].find().exec();
 
-          case 21:
+          case 26:
             _documents = _context.sent;
             fields[key].children[relKey] = _objectSpread2({
               options: setOptions(_documents, relationship[relKey])
             }, fields[key].children[relKey]);
-            _context.next = 16;
+            _context.next = 21;
             break;
 
-          case 25:
-            _context.next = 3;
+          case 30:
+            _context.next = 5;
             break;
 
-          case 27:
+          case 32:
             return _context.abrupt("return", fields);
 
-          case 28:
+          case 33:
           case "end":
             return _context.stop();
         }
@@ -676,33 +695,45 @@ function destroy (module, collection) {
 }
 
 function fetchFilters (_ref) {
-  var filters = _ref.filters;
+  var filters = _ref.filters,
+      idKey = _ref.idKey,
+      parent = _ref.parent;
   return /*#__PURE__*/function () {
     var _ref3 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(_ref2) {
-      var commit, fields;
+      var commit, fields, relationships, formattedFields;
       return regeneratorRuntime.wrap(function _callee$(_context) {
         while (1) {
           switch (_context.prev = _context.next) {
             case 0:
               commit = _ref2.commit;
               _context.prev = 1;
-              fields = filters.fields;
-              commit('setFilters', fields);
+              fields = filters.fields, relationships = filters.relationships;
+              _context.next = 5;
+              return getFieldsWithRelationshipOptions({
+                fields: fields,
+                idKey: idKey,
+                parent: parent,
+                relationships: relationships
+              });
+
+            case 5:
+              formattedFields = _context.sent;
+              commit('setFilters', formattedFields);
               return _context.abrupt("return", formatResponse({
-                fields: fields
+                formattedFields: formattedFields
               }));
 
-            case 7:
-              _context.prev = 7;
+            case 10:
+              _context.prev = 10;
               _context.t0 = _context["catch"](1);
               return _context.abrupt("return", _context.t0);
 
-            case 10:
+            case 13:
             case "end":
               return _context.stop();
           }
         }
-      }, _callee, null, [[1, 7]]);
+      }, _callee, null, [[1, 10]]);
     }));
 
     return function (_x) {
@@ -723,6 +754,9 @@ function fetchList (module, collection) {
           _ref3$page,
           page,
           search,
+          _ref4,
+          preQueryList,
+          findParam,
           query,
           documents,
           count,
@@ -737,20 +771,25 @@ function fetchList (module, collection) {
             case 0:
               commit = _ref.commit;
               _ref3 = _args.length > 1 && _args[1] !== undefined ? _args[1] : {}, filters = _ref3.filters, findQuery = _ref3.findQuery, increment = _ref3.increment, limit = _ref3.limit, _ref3$page = _ref3.page, page = _ref3$page === void 0 ? 1 : _ref3$page, search = _ref3.search;
+              _context.prev = 2;
+              _ref4 = module.interceptors || {}, preQueryList = _ref4.preQueryList;
+              findParam = preQueryList ? preQueryList({
+                search: search,
+                filters: filters
+              }) : findQuery || {};
 
               if (!findQuery) {
                 findQuery = getFindQuery(module.filters, {
-                  filters: filters,
-                  search: search
+                  filters: findParam.filters || filters,
+                  search: findParam.search || search
                 });
               }
 
-              _context.prev = 3;
               query = collection.find(findQuery).sort(module.sort);
-              _context.next = 7;
+              _context.next = 9;
               return query.exec();
 
-            case 7:
+            case 9:
               documents = _context.sent;
               count = documents.length;
               skip = (page - 1) * (limit || module.perPage);
@@ -762,10 +801,10 @@ function fetchList (module, collection) {
                 results: documentsJSON
               });
               _context.t0 = formatResponse;
-              _context.next = 16;
+              _context.next = 18;
               return getFieldsWithRelationshipOptions(module);
 
-            case 16:
+            case 18:
               _context.t1 = _context.sent;
               _context.t2 = documentsJSON;
               _context.t3 = {
@@ -774,17 +813,17 @@ function fetchList (module, collection) {
               };
               return _context.abrupt("return", (0, _context.t0)(_context.t3));
 
-            case 22:
-              _context.prev = 22;
-              _context.t4 = _context["catch"](3);
+            case 24:
+              _context.prev = 24;
+              _context.t4 = _context["catch"](2);
               return _context.abrupt("return", _context.t4);
 
-            case 25:
+            case 27:
             case "end":
               return _context.stop();
           }
         }
-      }, _callee, null, [[3, 22]]);
+      }, _callee, null, [[2, 24]]);
     }));
 
     return function (_x) {
@@ -804,7 +843,10 @@ function fetchSingle (module, collection) {
               commit = _ref.commit;
               form = _ref2.form, id = _ref2.id;
               _context.next = 4;
-              return getFieldsWithRelationshipOptions(module);
+              return getFieldsWithRelationshipOptions(_objectSpread2(_objectSpread2({}, module), {}, {
+                form: form,
+                id: id
+              }));
 
             case 4:
               fields = _context.sent;
@@ -1271,9 +1313,11 @@ var _default = /*#__PURE__*/function () {
 
                 calculateSyncProgress = function calculateSyncProgress(syncState, listDocumentsRead, listTotalPending, collectionIndex, moduleByName) {
                   syncState.change$.subscribe(function (_ref) {
-                    var change = _ref.change;
+                    var change = _ref.change,
+                        direction = _ref.direction;
+                    var isPullDirection = direction === 'pull';
 
-                    if (_this.sync.progress) {
+                    if (isPullDirection && _this.sync.progress) {
                       if (!listTotalPending[collectionIndex]) {
                         listTotalPending[collectionIndex] = change.pending + change.docs_read;
                       }
@@ -1290,7 +1334,7 @@ var _default = /*#__PURE__*/function () {
                       _this.sync.progress(Math.round(100 * progress / total));
                     }
 
-                    if (moduleByName.sync && moduleByName.sync.progress) {
+                    if (isPullDirection && moduleByName.sync && moduleByName.sync.progress) {
                       var totalPending = 0;
 
                       if (!totalPending) {
@@ -1331,7 +1375,7 @@ var _default = /*#__PURE__*/function () {
                         case 6:
                           _context3.next = 8;
                           return _this.collections[collectionName].sync(_objectSpread2(_objectSpread2({}, syncOptions), {}, {
-                            remote: "".concat(syncOptions.baseURL, "/couchdb/").concat(collectionName)
+                            remote: "".concat(syncOptions.baseURL, "/").concat(collectionName)
                           }));
 
                         case 8:
