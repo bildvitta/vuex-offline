@@ -7,9 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 # Unreleased
 
 ### Added
-- added option to pass relationship in filters.
+- added option to send relationship in filters.
 - added `preQueryList` function to intercept queries.
-- added the possibility to have relationship of collections only for declared methods.
+- added the possibility of having relationship of collections only for declared methods.
 
 ### Changed
 - changed base url in `makesync` function.
