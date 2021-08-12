@@ -1,5 +1,5 @@
 import update from './update.js'
 
-export default function (module, collection) {
-  return update(module, collection)
+export default function (module, collection, interceptors) {
+  return update(module, collection, interceptors)
 }

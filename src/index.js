@@ -42,6 +42,10 @@ export default class {
       'postCreate'
     ]
 
+    this.interceptors = options.interceptors || {
+      postSaveByAction: (() => {})
+    }
+
     // Types
     this.types = options.types || [
       'CREATE',
@@ -136,7 +140,7 @@ export default class {
     const has = type => types.includes(type)
 
     // Params
-    const params = [module, collection]
+    const params = [module, collection, this.interceptors]
 
     return {
       namespaced: true,

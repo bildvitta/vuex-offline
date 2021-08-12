@@ -7,7 +7,9 @@ import {
   statusResponse
 } from '../../utils/index.js'
 
-export default function ({ fields, updateDefaults }, collection) {
+export default function (module, collection, { postSaveByAction }) {
+  const { fields, updateDefaults, name } = module
+
   return async function ({ commit }, { payload, id }) {
     payload = { ...payload, ...setDefaults(updateDefaults) }
 
@@ -26,6 +28,12 @@ export default function ({ fields, updateDefaults }, collection) {
       const result = { ...document.toJSON(), ...payload }
 
       commit('replaceItem', result)
+
+      postSaveByAction({
+        name,
+        fields,
+        payload: result,
+      })
       return formatResponse({ result })
     } catch (error) {
       throw formatError(error)
