@@ -30,6 +30,8 @@ export default class {
     this.modules = options.modules || []
     this.storeModules = {}
 
+    this.postSaveByAction = options.postSaveByAction || (() => {})
+
     // Middleware-hooks
     // https://rxdb.info/middleware.html
     this.hooks = options.hooks || [
@@ -136,7 +138,7 @@ export default class {
     const has = type => types.includes(type)
 
     // Params
-    const params = [module, collection]
+    const params = [module, collection, this.postSaveByAction]
 
     return {
       namespaced: true,
