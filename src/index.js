@@ -30,8 +30,6 @@ export default class {
     this.modules = options.modules || []
     this.storeModules = {}
 
-    this.postSaveByAction = options.postSaveByAction || (() => {})
-
     // Middleware-hooks
     // https://rxdb.info/middleware.html
     this.hooks = options.hooks || [
