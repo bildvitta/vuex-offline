@@ -592,9 +592,11 @@ function statusResponse (code, text) {
   };
 }
 
-function create (_ref, collection) {
-  var defaults = _ref.defaults,
-      fields = _ref.fields;
+function create (module, collection, _ref) {
+  var postSaveByAction = _ref.postSaveByAction;
+  var defaults = module.defaults,
+      fields = module.fields,
+      name = module.name;
   return /*#__PURE__*/function () {
     var _ref4 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(_ref2, _ref3) {
       var commit, payload, document, documentJSON;
@@ -617,21 +619,26 @@ function create (_ref, collection) {
               document = _context.sent;
               documentJSON = document.toJSON();
               commit('setListItem', documentJSON);
+              postSaveByAction({
+                name: name,
+                fields: fields,
+                payload: documentJSON
+              });
               return _context.abrupt("return", formatResponse({
                 result: documentJSON
               }));
 
-            case 13:
-              _context.prev = 13;
+            case 14:
+              _context.prev = 14;
               _context.t0 = _context["catch"](3);
               throw formatError(_context.t0);
 
-            case 16:
+            case 17:
             case "end":
               return _context.stop();
           }
         }
-      }, _callee, null, [[3, 13]]);
+      }, _callee, null, [[3, 14]]);
     }));
 
     return function (_x, _x2) {
@@ -902,9 +909,11 @@ function fetchSingle (module, collection) {
   }();
 }
 
-function update (_ref, collection) {
-  var fields = _ref.fields,
-      updateDefaults = _ref.updateDefaults;
+function update (module, collection, _ref) {
+  var postSaveByAction = _ref.postSaveByAction;
+  var fields = module.fields,
+      updateDefaults = module.updateDefaults,
+      name = module.name;
   return /*#__PURE__*/function () {
     var _ref4 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(_ref2, _ref3) {
       var commit, payload, id, document, result;
@@ -942,21 +951,26 @@ function update (_ref, collection) {
             case 12:
               result = _objectSpread2(_objectSpread2({}, document.toJSON()), payload);
               commit('replaceItem', result);
+              postSaveByAction({
+                name: name,
+                fields: fields,
+                payload: result
+              });
               return _context.abrupt("return", formatResponse({
                 result: result
               }));
 
-            case 17:
-              _context.prev = 17;
+            case 18:
+              _context.prev = 18;
               _context.t0 = _context["catch"](3);
               throw formatError(_context.t0);
 
-            case 20:
+            case 21:
             case "end":
               return _context.stop();
           }
         }
-      }, _callee, null, [[3, 17]]);
+      }, _callee, null, [[3, 18]]);
     }));
 
     return function (_x, _x2) {
@@ -965,8 +979,8 @@ function update (_ref, collection) {
   }();
 }
 
-function replace (module, collection) {
-  return update(module, collection);
+function replace (module, collection, interceptors) {
+  return update(module, collection, interceptors);
 }
 
 var actions = {
@@ -1091,7 +1105,10 @@ var _default = /*#__PURE__*/function () {
     this.storeModules = {}; // Middleware-hooks
     // https://rxdb.info/middleware.html
 
-    this.hooks = options.hooks || ['preInsert', 'postInsert', 'preSave', 'postSave', 'preRemove', 'postRemove', 'postCreate']; // Types
+    this.hooks = options.hooks || ['preInsert', 'postInsert', 'preSave', 'postSave', 'preRemove', 'postRemove', 'postCreate'];
+    this.interceptors = options.interceptors || {
+      postSaveByAction: function postSaveByAction() {}
+    }; // Types
 
     this.types = options.types || ['CREATE', 'DESTROY', 'FETCH_FILTERS', 'FETCH_LIST', 'FETCH_SINGLE', 'REPLACE', 'UPDATE'];
   }
@@ -1252,7 +1269,7 @@ var _default = /*#__PURE__*/function () {
       }; // Params
 
 
-      var params = [module, collection];
+      var params = [module, collection, this.interceptors];
       return {
         namespaced: true,
         actions: _objectSpread2({
