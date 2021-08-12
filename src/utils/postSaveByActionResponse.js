@@ -1,13 +1,13 @@
 export default function ({ uploads = [], name, payload = {} }) {
-  const uploadsPaylod = {}
+  const uploadsPayload = {}
 
   for (const upload of uploads) {
-    uploadsPaylod[upload] = payload[upload]
+    uploadsPayload[upload] = payload[upload]
   }
 
   return {
     name,
-    uploadsPaylod,
+    uploadsPayload,
     payload
   }
 }
