@@ -11,7 +11,6 @@ import parseJSON from './parseJSON.js'
 import setDefaults from './setDefaults.js'
 import setOptions from './setOptions.js'
 import statusResponse from './statusResponse.js'
-import postSaveByActionResponse from './postSaveByActionResponse.js'
 
 export {
   find,
@@ -26,6 +25,5 @@ export {
   parseJSON,
   setDefaults,
   setOptions,
-  postSaveByActionResponse,
   statusResponse
 }

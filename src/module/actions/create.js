@@ -3,13 +3,12 @@ import {
   formatResponse,
   getFieldsByType,
   nestField,
-  setDefaults,
-  postSaveByActionResponse
+  setDefaults
 } from '../../utils/index.js'
 
-export default function (module, collection, postSaveByAction) {
-  const { defaults, fields, uploads, name } = module
-
+export default function (module, collection, { postSaveByAction }) {
+  const { defaults, fields, name } = module
+  
   return async function ({ commit }, { payload }) {
     payload = { ...setDefaults(defaults), ...payload }
 
@@ -23,11 +22,11 @@ export default function (module, collection, postSaveByAction) {
 
       commit('setListItem', documentJSON)
 
-      postSaveByAction(postSaveByActionResponse({
+      postSaveByAction({
         name,
-        uploads,
-        payload: documentJSON
-      }))
+        fields,
+        payload: documentJSON,
+      })
       return formatResponse({ result: documentJSON })
     } catch (error) {
       throw formatError(error)

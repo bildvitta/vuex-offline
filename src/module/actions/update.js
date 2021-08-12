@@ -4,12 +4,11 @@ import {
   getFieldsByType,
   nestField,
   setDefaults,
-  statusResponse,
-  postSaveByActionResponse
+  statusResponse
 } from '../../utils/index.js'
 
-export default function (module, collection, postSaveByAction) {
-  const { fields, updateDefaults, uploads, name } = module
+export default function (module, collection, { postSaveByAction }) {
+  const { fields, updateDefaults, name } = module
 
   return async function ({ commit }, { payload, id }) {
     payload = { ...payload, ...setDefaults(updateDefaults) }
@@ -30,11 +29,11 @@ export default function (module, collection, postSaveByAction) {
 
       commit('replaceItem', result)
 
-      postSaveByAction(postSaveByActionResponse({
+      postSaveByAction({
         name,
-        uploads,
-        payload: result
-      }))
+        fields,
+        payload: result,
+      })
       return formatResponse({ result })
     } catch (error) {
       throw formatError(error)
