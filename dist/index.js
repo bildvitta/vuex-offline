@@ -225,6 +225,20 @@ function _createForOfIteratorHelper(o, allowArrayLike) {
   };
 }
 
+function deleteBy (object) {
+  var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : function () {};
+
+  for (var key in object) {
+    var validation = callback(object[key]);
+
+    if (validation) {
+      delete object[key];
+    }
+  }
+
+  return object;
+}
+
 /**
  * @param {string} name
  * @param {object} query={object}
@@ -606,7 +620,9 @@ function create (module, collection, _ref) {
             case 0:
               commit = _ref2.commit;
               payload = _ref3.payload;
-              payload = _objectSpread2(_objectSpread2({}, setDefaults(defaults)), payload);
+              payload = _objectSpread2(_objectSpread2({}, setDefaults(defaults)), deleteBy(payload, function (item) {
+                return item === undefined;
+              }));
               _context.prev = 3;
               getFieldsByType(fields, 'nested', function (_ref5) {
                 var name = _ref5.name;

@@ -1,3 +1,4 @@
+import deleteBy from './deleteBy.js'
 import find from './find.js'
 import findOne from './findOne.js'
 import formatError from './formatError.js'
@@ -13,6 +14,7 @@ import setOptions from './setOptions.js'
 import statusResponse from './statusResponse.js'
 
 export {
+  deleteBy,
   find,
   findOne,
   formatError,
