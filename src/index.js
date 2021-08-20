@@ -235,6 +235,7 @@ export default class {
       const moduleByName = this.modules.find(module => module.name === collectionName)
       const moduleOptions = (moduleByName.sync && moduleByName.sync.options) || {}
       const syncOptions = { ...defaultOptions, ...this.sync.options, ...moduleOptions }
+      const query = (moduleByName.sync && moduleByName.sync.query) || this.sync.query || (() => {})
 
       if (!syncOptions.baseURL) {
         throw new Error('baseURL is required to sync.')
@@ -242,7 +243,8 @@ export default class {
 
       const syncState = await this.collections[collectionName].sync({
         ...syncOptions,
-        remote: `${syncOptions.baseURL}/${collectionName}`
+        remote: `${syncOptions.baseURL}/${collectionName}`,
+        query: query(this.collections[collectionName])
       })
 
       if (moduleByName.sync && moduleByName.sync.handler) {
