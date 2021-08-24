@@ -191,8 +191,15 @@ export default class {
     const listDocumentsRead = []
     const listTotalPending = []
 
-    const calculateSyncProgress = (syncState, listDocumentsRead, listTotalPending, collectionIndex, moduleByName) => {
-      syncState.change$.subscribe(({ change, direction }) => {
+    const calculateSyncProgress = (syncState, listDocumentsRead, listTotalPending, collectionIndex, moduleByName, syncOptions) => {
+      syncState.change$.subscribe(context => {
+        // if it is only push there will be no loading.
+        if (syncOptions.direction.push && !syncOptions.direction.pull) return
+
+        // when it's only one direction the structure comes { ...contentChange }
+        context = context.direction ? context : { direction: 'pull', change: { ...context } }
+
+        const { change, direction } = context
         const isPullDirection = direction === 'pull'
 
         if (isPullDirection && this.sync.progress) {
@@ -252,7 +259,7 @@ export default class {
       }
 
       if (this.sync.progress || (moduleByName.sync && moduleByName.sync.progress)) {
-        calculateSyncProgress(syncState, listDocumentsRead, listTotalPending, collectionIndex, moduleByName)
+        calculateSyncProgress(syncState, listDocumentsRead, listTotalPending, collectionIndex, moduleByName, syncOptions)
       }
     }
   }
