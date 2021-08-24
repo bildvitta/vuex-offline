@@ -1,10 +1,10 @@
 import {
+  deleteBy,
   formatError,
   formatResponse,
   getFieldsByType,
   nestField,
-  setDefaults,
-  deleteBy
+  setDefaults
 } from '../../utils/index.js'
 
 export default function (module, collection, { postSaveByAction }) {
@@ -12,7 +12,10 @@ export default function (module, collection, { postSaveByAction }) {
 
   
   return async function ({ commit }, { payload }) {
-    payload = { ...setDefaults(defaults), ...deleteBy(payload, item => item === undefined) }
+    payload = {
+      ...setDefaults(defaults),
+      ...deleteBy(payload, item => item === undefined)
+    }
 
     try {
       getFieldsByType(fields, 'nested', ({ name }) => {
