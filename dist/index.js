@@ -1325,9 +1325,9 @@ var _default = /*#__PURE__*/function () {
 
         var defaultOptions, collectionsToSync, listDocumentsRead, listTotalPending, calculateSyncProgress, sumList, _loop, collectionIndex;
 
-        return regeneratorRuntime.wrap(function _callee3$(_context4) {
+        return regeneratorRuntime.wrap(function _callee3$(_context5) {
           while (1) {
-            switch (_context4.prev = _context4.next) {
+            switch (_context5.prev = _context5.next) {
               case 0:
                 defaultOptions = {
                   waitForLeadership: true,
@@ -1344,10 +1344,18 @@ var _default = /*#__PURE__*/function () {
                 listDocumentsRead = [];
                 listTotalPending = [];
 
-                calculateSyncProgress = function calculateSyncProgress(syncState, listDocumentsRead, listTotalPending, collectionIndex, moduleByName) {
-                  syncState.change$.subscribe(function (_ref) {
-                    var change = _ref.change,
-                        direction = _ref.direction;
+                calculateSyncProgress = function calculateSyncProgress(syncState, listDocumentsRead, listTotalPending, collectionIndex, moduleByName, syncOptions) {
+                  syncState.change$.subscribe(function (context) {
+                    // if it is only push there will be no loading.
+                    if (syncOptions.direction.push && !syncOptions.direction.pull) return; // when it's only one direction the structure comes { ...contentChange }
+
+                    context = context.direction ? context : {
+                      direction: 'pull',
+                      change: _objectSpread2({}, context)
+                    };
+                    var _context3 = context,
+                        change = _context3.change,
+                        direction = _context3.direction;
                     var isPullDirection = direction === 'pull';
 
                     if (isPullDirection && _this.sync.progress) {
@@ -1386,10 +1394,10 @@ var _default = /*#__PURE__*/function () {
                 };
 
                 _loop = /*#__PURE__*/regeneratorRuntime.mark(function _loop(collectionIndex) {
-                  var collectionName, moduleByName, moduleOptions, syncOptions, syncState;
-                  return regeneratorRuntime.wrap(function _loop$(_context3) {
+                  var collectionName, moduleByName, moduleOptions, syncOptions, query, syncState;
+                  return regeneratorRuntime.wrap(function _loop$(_context4) {
                     while (1) {
-                      switch (_context3.prev = _context3.next) {
+                      switch (_context4.prev = _context4.next) {
                         case 0:
                           collectionName = collectionsToSync[collectionIndex];
                           moduleByName = _this.modules.find(function (module) {
@@ -1398,55 +1406,58 @@ var _default = /*#__PURE__*/function () {
                           moduleOptions = moduleByName.sync && moduleByName.sync.options || {};
                           syncOptions = _objectSpread2(_objectSpread2(_objectSpread2({}, defaultOptions), _this.sync.options), moduleOptions);
 
+                          query = moduleByName.sync && moduleByName.sync.query || _this.sync.query || function () {};
+
                           if (syncOptions.baseURL) {
-                            _context3.next = 6;
+                            _context4.next = 7;
                             break;
                           }
 
                           throw new Error('baseURL is required to sync.');
 
-                        case 6:
-                          _context3.next = 8;
+                        case 7:
+                          _context4.next = 9;
                           return _this.collections[collectionName].sync(_objectSpread2(_objectSpread2({}, syncOptions), {}, {
-                            remote: "".concat(syncOptions.baseURL, "/").concat(collectionName)
+                            remote: "".concat(syncOptions.baseURL, "/").concat(collectionName),
+                            query: query(_this.collections[collectionName])
                           }));
 
-                        case 8:
-                          syncState = _context3.sent;
+                        case 9:
+                          syncState = _context4.sent;
 
                           if (moduleByName.sync && moduleByName.sync.handler) {
                             moduleByName.sync.handler(syncState);
                           }
 
                           if (_this.sync.progress || moduleByName.sync && moduleByName.sync.progress) {
-                            calculateSyncProgress(syncState, listDocumentsRead, listTotalPending, collectionIndex, moduleByName);
+                            calculateSyncProgress(syncState, listDocumentsRead, listTotalPending, collectionIndex, moduleByName, syncOptions);
                           }
 
-                        case 11:
+                        case 12:
                         case "end":
-                          return _context3.stop();
+                          return _context4.stop();
                       }
                     }
                   }, _loop);
                 });
-                _context4.t0 = regeneratorRuntime.keys(collectionsToSync);
+                _context5.t0 = regeneratorRuntime.keys(collectionsToSync);
 
               case 8:
-                if ((_context4.t1 = _context4.t0()).done) {
-                  _context4.next = 13;
+                if ((_context5.t1 = _context5.t0()).done) {
+                  _context5.next = 13;
                   break;
                 }
 
-                collectionIndex = _context4.t1.value;
-                return _context4.delegateYield(_loop(collectionIndex), "t2", 11);
+                collectionIndex = _context5.t1.value;
+                return _context5.delegateYield(_loop(collectionIndex), "t2", 11);
 
               case 11:
-                _context4.next = 8;
+                _context5.next = 8;
                 break;
 
               case 13:
               case "end":
-                return _context4.stop();
+                return _context5.stop();
             }
           }
         }, _callee3, this);
