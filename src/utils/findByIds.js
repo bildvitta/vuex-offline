@@ -1,7 +1,7 @@
 import { database } from '../index.js'
 /**
- * @param {} name
- * @param {} ids
+ * @param {string} name
+ * @param {string[]} ids
  * @returns {Promise<Map>}
  * @example findByIds('users', ['uuid-1', 'uuid-2'])
  */
