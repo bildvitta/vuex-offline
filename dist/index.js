@@ -255,6 +255,17 @@ function find (name) {
 
 /**
  * @param {string} name
+ * @param {string[]} ids
+ * @returns {Promise<Map>}
+ * @example findByIds('users', ['uuid-1', 'uuid-2'])
+ */
+
+function findByIds (name, ids) {
+  return database.collections[name].findByIds(ids);
+}
+
+/**
+ * @param {string} name
  * @param {object | string} query={object | string}
  * @returns {promise}
  * @example findOne('users', 'my_uuid')
@@ -1475,4 +1486,4 @@ var _default = /*#__PURE__*/function () {
 }();
 
 export default _default;
-export { createDateTime, createUUID, database, find, findOne, nestField };
+export { createDateTime, createUUID, database, find, findByIds, findOne, nestField };
