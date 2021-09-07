@@ -1,5 +1,6 @@
 import deleteBy from './deleteBy.js'
 import find from './find.js'
+import findByIds from './findByIds.js'
 import findOne from './findOne.js'
 import formatError from './formatError.js'
 import formatResponse from './formatResponse.js'
@@ -16,6 +17,7 @@ import statusResponse from './statusResponse.js'
 export {
   deleteBy,
   find,
+  findByIds,
   findOne,
   formatError,
   formatResponse,

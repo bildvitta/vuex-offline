@@ -8,7 +8,7 @@ import { RxDBUpdatePlugin } from 'rxdb/plugins/update'
 
 import { actions, getters, mutations, state } from './module/index.js'
 
-import { find, findOne, nestField } from './utils/index.js'
+import { find, findOne, nestField, findByIds } from './utils/index.js'
 import { createDateTime, createUUID } from './defaults/index.js'
 
 let database = null
@@ -266,11 +266,12 @@ export default class {
 }
 
 export {
+  PouchDB,
   createDateTime,
   createUUID,
   database,
   find,
+  findByIds,
   findOne,
   nestField,
-  PouchDB
 }
