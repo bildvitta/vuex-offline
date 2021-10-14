@@ -188,52 +188,16 @@ export default class {
     }
 
     const collectionsToSync = collections || Object.keys(this.collections)
-    const listDocumentsRead = []
-    const listTotalPending = []
+    let collectionsActiveSync = {}
 
-    const calculateSyncProgress = (syncState, listDocumentsRead, listTotalPending, collectionIndex, moduleByName, syncOptions) => {
-      syncState.change$.subscribe(context => {
-        // if it is only push there will be no loading.
-        if (syncOptions.direction.push && !syncOptions.direction.pull) return
+    const handleOnSync = (syncState, collectionName, moduleByName) => {
+      syncState.active$.subscribe(active => {
+        Object.assign(collectionsActiveSync, { [collectionName]: active })
 
-        // when it's only one direction the structure comes { ...contentChange }
-        context = context.direction ? context : { direction: 'pull', change: { ...context } }
+        this.sync.onSync && this.sync.onSync(collectionsActiveSync)
 
-        const { change, direction } = context
-        const isPullDirection = direction === 'pull'
-
-        if (isPullDirection && this.sync.progress) {
-          if (!listTotalPending[collectionIndex]) {
-            listTotalPending[collectionIndex] = change.pending + change.docs_read
-          }
-    
-          listDocumentsRead[collectionIndex] = change.docs_read
-          
-          const total = sumList(listTotalPending)
-          const progress = sumList(listDocumentsRead)
-    
-          if (!change.pending) {
-            listTotalPending[collectionIndex] = 0
-            listDocumentsRead[collectionIndex] = 0
-          }
-  
-          this.sync.progress(Math.round((100 * progress) / total))
-        }
-  
-        if (isPullDirection && moduleByName.sync && moduleByName.sync.progress) {
-          let totalPending = 0
-  
-          if (!totalPending) {
-            totalPending = change.pending + change.docs_read
-          }
-  
-          moduleByName.sync.progress(Math.round((100 * change.docs_read) / totalPending))
-        }
+        moduleByName.sync && moduleByName.sync.onSync && moduleByName.sync.onSync(collectionsActiveSync)
       })
-    }
-
-    const sumList = (list) => {
-      return list.length ? list.reduce((accumulator, currentValue) => accumulator + currentValue) : list
     }
 
     for (const collectionIndex in collectionsToSync) {
@@ -258,8 +222,8 @@ export default class {
         moduleByName.sync.handler(syncState)
       }
 
-      if (this.sync.progress || (moduleByName.sync && moduleByName.sync.progress)) {
-        calculateSyncProgress(syncState, listDocumentsRead, listTotalPending, collectionIndex, moduleByName, syncOptions)
+      if (this.sync.onSync || (moduleByName.sync && moduleByName.sync.onSync)) {
+        handleOnSync(syncState, collectionName, moduleByName)
       }
     }
   }
