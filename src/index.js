@@ -188,19 +188,15 @@ export default class {
     }
 
     const collectionsToSync = collections || Object.keys(this.collections)
-    let syncActive = {}
+    let collectionsActiveSync = {}
 
     const handleOnSync = (syncState, collectionName, moduleByName) => {
       syncState.active$.subscribe(active => {
-        syncActive = Object.assign(syncActive, { [collectionName]: active })
+        Object.assign(collectionsActiveSync, { [collectionName]: active })
 
-        if (this.sync.onSync) {
-          this.sync.onSync(syncActive)
-        }
+        this.sync.onSync && this.sync.onSync(collectionsActiveSync)
 
-        if (moduleByName.sync && moduleByName.sync.onSync) {
-          moduleByName.sync.onSync(syncActive)
-        }
+        moduleByName.sync && moduleByName.sync.onSync && moduleByName.sync.onSync(collectionsActiveSync)
       })
     }
 
