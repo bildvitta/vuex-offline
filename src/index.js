@@ -278,7 +278,7 @@ export default class {
       }
 
       if (this.sync.progress || (moduleByName.sync && moduleByName.sync.progress)) {
-        calculateSyncProgress(syncState, listDocumentsRead, listTotalPending, collectionIndex, moduleByName, syncOptions, collectionName)
+        calculateSyncProgress(syncState, listDocumentsRead, listTotalPending, collectionIndex, moduleByName, syncOptions)
       }
 
       if (this.sync.actives || (moduleByName.sync && moduleByName.sync.actives)) {
