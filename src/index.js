@@ -191,6 +191,8 @@ export default class {
     const listDocumentsRead = []
     const listTotalPending = []
 
+    let syncActive = {}
+
     const calculateSyncProgress = (syncState, listDocumentsRead, listTotalPending, collectionIndex, moduleByName, syncOptions) => {
       syncState.change$.subscribe(context => {
         // if it is only push there will be no loading.
@@ -211,7 +213,7 @@ export default class {
           
           const total = sumList(listTotalPending)
           const progress = sumList(listDocumentsRead)
-    
+
           if (!change.pending) {
             listTotalPending[collectionIndex] = 0
             listDocumentsRead[collectionIndex] = 0
@@ -228,6 +230,23 @@ export default class {
           }
   
           moduleByName.sync.progress(Math.round((100 * change.docs_read) / totalPending))
+        }
+      })
+    }
+
+    const handleActivesSync = (syncState, collectionName, moduleByName) => {
+      syncState.active$.subscribe(active => {
+        syncActive = {
+          ...syncActive,
+          [collectionName]: active
+        }
+
+        if (this.sync.actives) {
+          this.sync.actives(syncActive)
+        }
+
+        if (moduleByName.sync && moduleByName.sync.actives) {
+          moduleByName.sync.actives(syncActive)
         }
       })
     }
@@ -259,7 +278,11 @@ export default class {
       }
 
       if (this.sync.progress || (moduleByName.sync && moduleByName.sync.progress)) {
-        calculateSyncProgress(syncState, listDocumentsRead, listTotalPending, collectionIndex, moduleByName, syncOptions)
+        calculateSyncProgress(syncState, listDocumentsRead, listTotalPending, collectionIndex, moduleByName, syncOptions, collectionName)
+      }
+
+      if (this.sync.actives || (moduleByName.sync && moduleByName.sync.actives)) {
+        handleActivesSync(syncState, collectionName, moduleByName)
       }
     }
   }
