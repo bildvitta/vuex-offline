@@ -192,11 +192,18 @@ export default class {
 
     const handleOnSync = (syncState, collectionName, moduleByName) => {
       syncState.active$.subscribe(active => {
+        if (!Object.keys(collectionsActiveSync).length && !active) return
+
         Object.assign(collectionsActiveSync, { [collectionName]: active })
 
-        this.sync.onSync && this.sync.onSync(collectionsActiveSync)
+        const collectionsList = Object.values(collectionsActiveSync)
+        const quantityOfFinishedSync = collectionsList.filter(value => !value).length
 
-        moduleByName.sync && moduleByName.sync.onSync && moduleByName.sync.onSync(collectionsActiveSync)
+        const porcentage = quantityOfFinishedSync ? Math.round((100 * quantityOfFinishedSync) / collectionsList.length) : 0
+
+        this.sync.onSync && this.sync.onSync(porcentage, collectionsActiveSync)
+
+        moduleByName.sync && moduleByName.sync.onSync && moduleByName.sync.onSync(porcentage, collectionsActiveSync)
       })
     }
 
