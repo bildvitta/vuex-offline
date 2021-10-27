@@ -1356,9 +1356,15 @@ var _default = /*#__PURE__*/function () {
 
                 handleOnSync = function handleOnSync(syncState, collectionName, moduleByName) {
                   syncState.active$.subscribe(function (active) {
+                    if (!Object.keys(collectionsActiveSync).length && !active) return;
                     Object.assign(collectionsActiveSync, _defineProperty({}, collectionName, active));
-                    _this.sync.onSync && _this.sync.onSync(collectionsActiveSync);
-                    moduleByName.sync && moduleByName.sync.onSync && moduleByName.sync.onSync(collectionsActiveSync);
+                    var collectionsList = Object.values(collectionsActiveSync);
+                    var quantityOfFinishedSync = collectionsList.filter(function (value) {
+                      return !value;
+                    }).length;
+                    var percentage = quantityOfFinishedSync ? Math.round(100 * quantityOfFinishedSync / collectionsList.length) : 0;
+                    _this.sync.onSync && _this.sync.onSync(percentage, collectionsActiveSync);
+                    moduleByName.sync && moduleByName.sync.onSync && moduleByName.sync.onSync(percentage, collectionsActiveSync);
                   });
                 };
 
