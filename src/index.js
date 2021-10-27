@@ -199,11 +199,11 @@ export default class {
         const collectionsList = Object.values(collectionsActiveSync)
         const quantityOfFinishedSync = collectionsList.filter(value => !value).length
 
-        const porcentage = quantityOfFinishedSync ? Math.round((100 * quantityOfFinishedSync) / collectionsList.length) : 0
+        const percentage = quantityOfFinishedSync ? Math.round((100 * quantityOfFinishedSync) / collectionsList.length) : 0
 
-        this.sync.onSync && this.sync.onSync(porcentage, collectionsActiveSync)
+        this.sync.onSync && this.sync.onSync(percentage, collectionsActiveSync)
 
-        moduleByName.sync && moduleByName.sync.onSync && moduleByName.sync.onSync(porcentage, collectionsActiveSync)
+        moduleByName.sync && moduleByName.sync.onSync && moduleByName.sync.onSync(percentage, collectionsActiveSync)
       })
     }
 
