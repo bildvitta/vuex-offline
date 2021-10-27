@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Passing the percentage logic to vue-offline.
 
+# 2.7.0 - 2021-10-14
+
+### Added
+- added function `onSync` in constructor to get sync.
+
+### Removed
+- removed function `progress` in constructor.
+
 # 2.6.0 - 2021-09-07
 
 ### Added
