@@ -104,6 +104,21 @@ await vuexOffline.destroyDatabase()
 await vuexOffline.removeDatabase()
 ```
 
+## Uso em desenvolvimento
+Vá para o diretório raiz da aplicação do vuexOffline, altere o `main` dentro do `package.json` para: `"main": "./src/index.js"`, dentro do diretório raiz no terminal execute:
+
+```bash
+npm link
+```
+
+Após isto, abra o terminal no diretório raiz da aplicação que está instalado o VuexOffline, e execute:
+
+```bash
+npm link @bildvitta/vuex-offline
+```
+
+Pronto, seu projeto está linkado com o VuexOffline, tudo que fizer dentro do VuexOffline será aplicado instantaneamente no seu projeto.
+
 ## Uso
 Exemplos de modulos:
 ```js
@@ -250,7 +265,7 @@ const posts = {
       })
     },
 
-    // seleciona por quais campos será feita a busca na area de "pesquisar"
+    // seleciona por quais campos será feita a busca na área de "pesquisar"
     search: ['name']
   }
 
