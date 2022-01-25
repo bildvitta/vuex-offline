@@ -21,8 +21,6 @@ export default function (module, collection) {
         })
       }
 
-      console.log(collection, '>>>> collection')
-
       const query = collection.find(findQuery).sort(module.sort)
       const documents = await query.exec()
 
@@ -39,7 +37,6 @@ export default function (module, collection) {
         results: documentsJSON
       })
     } catch (error) {
-      console.log(error, '<<<< error from fetchList')
       return error
     }
   }

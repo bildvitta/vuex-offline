@@ -61,14 +61,12 @@ export default class {
   }
 
   addDatabasePlugin (...plugins) {
-    console.log(plugins, '>>>> plugins addDatabasePlugin')
     for (const plugin of plugins) {
       addRxPlugin(plugin)
     }
   }
 
   addDatabasePouchPlugin (...plugins) {
-    console.log(plugins, '>>>> plugins addDatabasePouchPlugin')
     for (const plugin of plugins) {
       addPouchPlugin(plugin)
     }
@@ -231,8 +229,6 @@ export default class {
         throw new Error('baseURL is required to sync.')
       }
 
-      console.log(this.collections[collectionName], 'this.collections[collectionName]')
-
       const syncState = await this.collections[collectionName].syncCouchDB({
         ...syncOptions,
         remote: `${syncOptions.baseURL}/${collectionName}`,
@@ -258,5 +254,6 @@ export {
   find,
   findByIds,
   findOne,
-  nestField,
+  getRxStoragePouch,
+  nestField
 }

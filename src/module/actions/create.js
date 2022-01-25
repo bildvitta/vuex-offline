@@ -7,6 +7,8 @@ import {
   setDefaults
 } from '../../utils/index.js'
 
+import { cloneDeep } from 'lodash'
+
 export default function (module, collection, { postSaveByAction }) {
   const { defaults, fields, name } = module
 
@@ -14,7 +16,7 @@ export default function (module, collection, { postSaveByAction }) {
   return async function ({ commit }, { payload }) {
     payload = {
       ...setDefaults(defaults),
-      ...deleteBy(payload, item => item === undefined)
+      ...deleteBy(cloneDeep(payload), item => item === undefined)
     }
 
     try {
@@ -34,6 +36,7 @@ export default function (module, collection, { postSaveByAction }) {
       })
       return formatResponse({ result: documentJSON })
     } catch (error) {
+      console.log(error, '>>>> error from create')
       throw formatError(error)
     }
   }
