@@ -1,10 +1,12 @@
-import { addRxPlugin, createRxDatabase, PouchDB } from 'rxdb/plugins/core'
+import { addRxPlugin, createRxDatabase } from 'rxdb/plugins/core'
 import { RxDBValidatePlugin } from 'rxdb/plugins/validate'
 import { RxDBQueryBuilderPlugin } from 'rxdb/plugins/query-builder'
 import { RxDBMigrationPlugin } from 'rxdb/plugins/migration'
-import { RxDBReplicationPlugin } from 'rxdb/plugins/replication'
+import { RxDBReplicationCouchDBPlugin } from 'rxdb/plugins/replication-couchdb'
 import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election'
 import { RxDBUpdatePlugin } from 'rxdb/plugins/update'
+
+import { getRxStoragePouch, addPouchPlugin, PouchDB } from 'rxdb/plugins/pouchdb'
 
 import { actions, getters, mutations, state } from './module/index.js'
 
@@ -59,8 +61,16 @@ export default class {
   }
 
   addDatabasePlugin (...plugins) {
+    console.log(plugins, '>>>> plugins addDatabasePlugin')
     for (const plugin of plugins) {
       addRxPlugin(plugin)
+    }
+  }
+
+  addDatabasePouchPlugin (...plugins) {
+    console.log(plugins, '>>>> plugins addDatabasePouchPlugin')
+    for (const plugin of plugins) {
+      addPouchPlugin(plugin)
     }
   }
 
@@ -71,10 +81,12 @@ export default class {
       RxDBValidatePlugin,
       RxDBQueryBuilderPlugin,
       RxDBMigrationPlugin,
-      RxDBReplicationPlugin,
+      RxDBReplicationCouchDBPlugin,
       RxDBLeaderElectionPlugin,
-      RxDBUpdatePlugin,
+      RxDBUpdatePlugin
+    )
 
+    this.addDatabasePouchPlugin(
       require('pouchdb-adapter-http'),
       require('pouchdb-adapter-idb')
     )
@@ -86,7 +98,7 @@ export default class {
     }
 
     this.database = await createRxDatabase({
-      adapter: 'idb',
+      storage: getRxStoragePouch('idb'),
       ...this.databaseOptions
     })
 
@@ -219,7 +231,9 @@ export default class {
         throw new Error('baseURL is required to sync.')
       }
 
-      const syncState = await this.collections[collectionName].sync({
+      console.log(this.collections[collectionName], 'this.collections[collectionName]')
+
+      const syncState = await this.collections[collectionName].syncCouchDB({
         ...syncOptions,
         remote: `${syncOptions.baseURL}/${collectionName}`,
         query: query(this.collections[collectionName])
