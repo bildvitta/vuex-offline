@@ -151,12 +151,6 @@ const posts = {
       label: 'Descrição'
     },
 
-    content: {
-      name: 'content',
-      type: 'text',
-      label: 'Conteúdo'
-    },
-
     categories: {
       name: 'categories',
       type: 'select',
@@ -203,12 +197,6 @@ const posts = {
         maxLength: 255
       },
 
-      content: {
-        type: 'string',
-        minLength: 3,
-        maxLength: 255
-      },
-
       categories: {
         type: 'array',
         ref: 'categories',
@@ -222,7 +210,6 @@ const posts = {
       'title',
       'isActive',
       'description',
-      'content',
       'categories',
       'createdAt',
       'updatedAt'
