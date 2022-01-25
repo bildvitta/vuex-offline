@@ -1,13 +1,12 @@
 # Vuex Offline
+Vuex offline é um gerador de modulos genérico para o vuex integrado com o [rxdb](https://rxdb.info/), utiliza o PouchDB como storage e Couchdb para replicação.
 
 ## Instalação
-
 ```bash
 $ npm i @bildvitta/vuex-offline
 ```
 
 ## API
-
 ```js
 import {
   PouchDB,
@@ -106,7 +105,6 @@ await vuexOffline.removeDatabase()
 ```
 
 ## Uso
-
 Exemplos de modulos:
 ```js
 import { createUUID, createDateTime } from '@bildvitta/vuex-offline'
@@ -481,3 +479,12 @@ new Vuex.Store({
   }
 })
 ```
+
+## Links úteis
+- [RxDB](https://rxdb.info/)
+- [Asteroid](http://asteroid.nave.dev/)
+- [Asteroid - API Design Patterns](https://www.notion.so/API-Design-Patterns-5c2509b697614bbbac49cbed0aab70a1)
+- [PouchDB](https://pouchdb.com/)
+- [CouchDB](https://couchdb.apache.org/)
+- [Mango](https://github.com/cloudant/mango)
+- [VuexStoreModule](https://github.com/bildvitta/vuex-store-module)
