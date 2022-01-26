@@ -1,10 +1,11 @@
-import { addRxPlugin, createRxDatabase, PouchDB } from 'rxdb/plugins/core'
+import { addRxPlugin, createRxDatabase } from 'rxdb/plugins/core'
 import { RxDBValidatePlugin } from 'rxdb/plugins/validate'
 import { RxDBQueryBuilderPlugin } from 'rxdb/plugins/query-builder'
 import { RxDBMigrationPlugin } from 'rxdb/plugins/migration'
-import { RxDBReplicationPlugin } from 'rxdb/plugins/replication'
+import { RxDBReplicationCouchDBPlugin } from 'rxdb/plugins/replication-couchdb'
 import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election'
 import { RxDBUpdatePlugin } from 'rxdb/plugins/update'
+import { getRxStoragePouch, addPouchPlugin, PouchDB } from 'rxdb/plugins/pouchdb'
 
 import { actions, getters, mutations, state } from './module/index.js'
 
@@ -17,6 +18,13 @@ export default class {
   constructor (options = {}) {
     if (!options.database.name) {
       throw new Error('Name is required.')
+    }
+
+    const validStorages = ['idb', 'memory']
+    this.storage = options.storage || 'idb'
+
+    if (!validStorages.includes(this.storage)) {
+      throw new Error(`Invalid storage: ${this.storage}. Valid values are: ${validStorages.join(', ')}.`)
     }
 
     this.database = null
@@ -64,6 +72,12 @@ export default class {
     }
   }
 
+  addDatabasePouchPlugin (...plugins) {
+    for (const plugin of plugins) {
+      addPouchPlugin(plugin)
+    }
+  }
+
   async createDatabase () {
     // Custom Build
     // https://rxdb.info/custom-build.html
@@ -71,12 +85,14 @@ export default class {
       RxDBValidatePlugin,
       RxDBQueryBuilderPlugin,
       RxDBMigrationPlugin,
-      RxDBReplicationPlugin,
+      RxDBReplicationCouchDBPlugin,
       RxDBLeaderElectionPlugin,
-      RxDBUpdatePlugin,
+      RxDBUpdatePlugin
+    )
 
+    this.addDatabasePouchPlugin(
       require('pouchdb-adapter-http'),
-      require('pouchdb-adapter-idb')
+      this._getStorageAdapterPlugin()
     )
 
     if (process.env.DEBUGGING) {
@@ -86,7 +102,7 @@ export default class {
     }
 
     this.database = await createRxDatabase({
-      adapter: 'idb',
+      storage: getRxStoragePouch(this.storage),
       ...this.databaseOptions
     })
 
@@ -219,7 +235,7 @@ export default class {
         throw new Error('baseURL is required to sync.')
       }
 
-      const syncState = await this.collections[collectionName].sync({
+      const syncState = await this.collections[collectionName].syncCouchDB({
         ...syncOptions,
         remote: `${syncOptions.baseURL}/${collectionName}`,
         query: query(this.collections[collectionName])
@@ -234,6 +250,15 @@ export default class {
       }
     }
   }
+
+  _getStorageAdapterPlugin () {
+    const storages = {
+      idb: () => require('pouchdb-adapter-idb'),
+      memory: () => require('pouchdb-adapter-memory'),
+    }
+
+    return storages[this.storage]()
+  }
 }
 
 export {
@@ -244,5 +269,5 @@ export {
   find,
   findByIds,
   findOne,
-  nestField,
+  nestField
 }

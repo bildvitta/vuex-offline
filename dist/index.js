@@ -1,11 +1,13 @@
 import { addRxPlugin, createRxDatabase } from 'rxdb/plugins/core';
-export { PouchDB } from 'rxdb/plugins/core';
 import { RxDBValidatePlugin } from 'rxdb/plugins/validate';
 import { RxDBQueryBuilderPlugin } from 'rxdb/plugins/query-builder';
 import { RxDBMigrationPlugin } from 'rxdb/plugins/migration';
-import { RxDBReplicationPlugin } from 'rxdb/plugins/replication';
+import { RxDBReplicationCouchDBPlugin } from 'rxdb/plugins/replication-couchdb';
 import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election';
 import { RxDBUpdatePlugin } from 'rxdb/plugins/update';
+import { addPouchPlugin, getRxStoragePouch } from 'rxdb/plugins/pouchdb';
+export { PouchDB } from 'rxdb/plugins/pouchdb';
+import { cloneDeep } from 'lodash';
 import { RxError } from 'rxdb/dist/es/rx-error.js';
 
 function ownKeys(object, enumerableOnly) {
@@ -13,14 +15,9 @@ function ownKeys(object, enumerableOnly) {
 
   if (Object.getOwnPropertySymbols) {
     var symbols = Object.getOwnPropertySymbols(object);
-
-    if (enumerableOnly) {
-      symbols = symbols.filter(function (sym) {
-        return Object.getOwnPropertyDescriptor(object, sym).enumerable;
-      });
-    }
-
-    keys.push.apply(keys, symbols);
+    enumerableOnly && (symbols = symbols.filter(function (sym) {
+      return Object.getOwnPropertyDescriptor(object, sym).enumerable;
+    })), keys.push.apply(keys, symbols);
   }
 
   return keys;
@@ -28,19 +25,12 @@ function ownKeys(object, enumerableOnly) {
 
 function _objectSpread2(target) {
   for (var i = 1; i < arguments.length; i++) {
-    var source = arguments[i] != null ? arguments[i] : {};
-
-    if (i % 2) {
-      ownKeys(Object(source), true).forEach(function (key) {
-        _defineProperty(target, key, source[key]);
-      });
-    } else if (Object.getOwnPropertyDescriptors) {
-      Object.defineProperties(target, Object.getOwnPropertyDescriptors(source));
-    } else {
-      ownKeys(Object(source)).forEach(function (key) {
-        Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key));
-      });
-    }
+    var source = null != arguments[i] ? arguments[i] : {};
+    i % 2 ? ownKeys(Object(source), !0).forEach(function (key) {
+      _defineProperty(target, key, source[key]);
+    }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) {
+      Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key));
+    });
   }
 
   return target;
@@ -49,17 +39,11 @@ function _objectSpread2(target) {
 function _typeof(obj) {
   "@babel/helpers - typeof";
 
-  if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-    _typeof = function (obj) {
-      return typeof obj;
-    };
-  } else {
-    _typeof = function (obj) {
-      return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-    };
-  }
-
-  return _typeof(obj);
+  return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) {
+    return typeof obj;
+  } : function (obj) {
+    return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+  }, _typeof(obj);
 }
 
 function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
@@ -117,6 +101,9 @@ function _defineProperties(target, props) {
 function _createClass(Constructor, protoProps, staticProps) {
   if (protoProps) _defineProperties(Constructor.prototype, protoProps);
   if (staticProps) _defineProperties(Constructor, staticProps);
+  Object.defineProperty(Constructor, "prototype", {
+    writable: false
+  });
   return Constructor;
 }
 
@@ -631,7 +618,7 @@ function create (module, collection, _ref) {
             case 0:
               commit = _ref2.commit;
               payload = _ref3.payload;
-              payload = _objectSpread2(_objectSpread2({}, setDefaults(defaults)), deleteBy(payload, function (item) {
+              payload = _objectSpread2(_objectSpread2({}, setDefaults(defaults)), deleteBy(cloneDeep(payload), function (item) {
                 return item === undefined;
               }));
               _context.prev = 3;
@@ -1122,6 +1109,13 @@ var _default = /*#__PURE__*/function () {
       throw new Error('Name is required.');
     }
 
+    var validStorages = ['idb', 'memory'];
+    this.storage = options.storage || 'idb';
+
+    if (!validStorages.includes(this.storage)) {
+      throw new Error("Invalid storage: ".concat(this.storage, ". Valid values are: ").concat(validStorages.join(', '), "."));
+    }
+
     this.database = null;
     this.databaseOptions = options.database;
     this.idKey = options.idKey || 'id';
@@ -1153,6 +1147,18 @@ var _default = /*#__PURE__*/function () {
       }
     }
   }, {
+    key: "addDatabasePouchPlugin",
+    value: function addDatabasePouchPlugin() {
+      for (var _len2 = arguments.length, plugins = new Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+        plugins[_key2] = arguments[_key2];
+      }
+
+      for (var _i2 = 0, _plugins2 = plugins; _i2 < _plugins2.length; _i2++) {
+        var plugin = _plugins2[_i2];
+        addPouchPlugin(plugin);
+      }
+    }
+  }, {
     key: "createDatabase",
     value: function () {
       var _createDatabase = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
@@ -1162,22 +1168,23 @@ var _default = /*#__PURE__*/function () {
               case 0:
                 // Custom Build
                 // https://rxdb.info/custom-build.html
-                this.addDatabasePlugin(RxDBValidatePlugin, RxDBQueryBuilderPlugin, RxDBMigrationPlugin, RxDBReplicationPlugin, RxDBLeaderElectionPlugin, RxDBUpdatePlugin, require('pouchdb-adapter-http'), require('pouchdb-adapter-idb'));
+                this.addDatabasePlugin(RxDBValidatePlugin, RxDBQueryBuilderPlugin, RxDBMigrationPlugin, RxDBReplicationCouchDBPlugin, RxDBLeaderElectionPlugin, RxDBUpdatePlugin);
+                this.addDatabasePouchPlugin(require('pouchdb-adapter-http'), this._getStorageAdapterPlugin());
 
                 if (process.env.DEBUGGING) {
                   this.addDatabasePlugin(require('rxdb/plugins/dev-mode').RxDBDevModePlugin);
                 }
 
-                _context.next = 4;
+                _context.next = 5;
                 return createRxDatabase(_objectSpread2({
-                  adapter: 'idb'
+                  storage: getRxStoragePouch(this.storage)
                 }, this.databaseOptions));
 
-              case 4:
+              case 5:
                 this.database = _context.sent;
                 database = this.database;
 
-              case 6:
+              case 7:
               case "end":
                 return _context.stop();
             }
@@ -1392,7 +1399,7 @@ var _default = /*#__PURE__*/function () {
 
                         case 7:
                           _context3.next = 9;
-                          return _this.collections[collectionName].sync(_objectSpread2(_objectSpread2({}, syncOptions), {}, {
+                          return _this.collections[collectionName].syncCouchDB(_objectSpread2(_objectSpread2({}, syncOptions), {}, {
                             remote: "".concat(syncOptions.baseURL, "/").concat(collectionName),
                             query: query(_this.collections[collectionName])
                           }));
@@ -1444,10 +1451,22 @@ var _default = /*#__PURE__*/function () {
 
       return makeSync;
     }()
+  }, {
+    key: "_getStorageAdapterPlugin",
+    value: function _getStorageAdapterPlugin() {
+      var storages = {
+        idb: function idb() {
+          return require('pouchdb-adapter-idb');
+        },
+        memory: function memory() {
+          return require('pouchdb-adapter-memory');
+        }
+      };
+      return storages[this.storage]();
+    }
   }]);
 
   return _default;
 }();
 
-export default _default;
-export { createDateTime, createUUID, database, find, findByIds, findOne, nestField };
+export { createDateTime, createUUID, database, _default as default, find, findByIds, findOne, nestField };

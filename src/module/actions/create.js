@@ -7,14 +7,15 @@ import {
   setDefaults
 } from '../../utils/index.js'
 
+import { cloneDeep } from 'lodash'
+
 export default function (module, collection, { postSaveByAction }) {
   const { defaults, fields, name } = module
 
-  
   return async function ({ commit }, { payload }) {
     payload = {
       ...setDefaults(defaults),
-      ...deleteBy(payload, item => item === undefined)
+      ...deleteBy(cloneDeep(payload), item => item === undefined)
     }
 
     try {
