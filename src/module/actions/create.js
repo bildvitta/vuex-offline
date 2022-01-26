@@ -12,7 +12,6 @@ import { cloneDeep } from 'lodash'
 export default function (module, collection, { postSaveByAction }) {
   const { defaults, fields, name } = module
 
-  
   return async function ({ commit }, { payload }) {
     payload = {
       ...setDefaults(defaults),
