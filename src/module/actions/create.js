@@ -36,7 +36,6 @@ export default function (module, collection, { postSaveByAction }) {
       })
       return formatResponse({ result: documentJSON })
     } catch (error) {
-      console.log(error, '>>>> error from create')
       throw formatError(error)
     }
   }

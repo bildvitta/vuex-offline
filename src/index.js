@@ -21,6 +21,13 @@ export default class {
       throw new Error('Name is required.')
     }
 
+    const validStorages = ['idb', 'memory']
+    this.storage = options.storage || 'idb'
+
+    if (!validStorages.includes(this.storage)) {
+      throw new Error(`Invalid storage: ${this.storage}. Valid values are: ${validStorages.join(', ')}.`)
+    }
+
     this.database = null
     this.databaseOptions = options.database
 
@@ -86,7 +93,7 @@ export default class {
 
     this.addDatabasePouchPlugin(
       require('pouchdb-adapter-http'),
-      require('pouchdb-adapter-idb')
+      this._getStorageAdapterPlugin()
     )
 
     if (process.env.DEBUGGING) {
@@ -96,7 +103,7 @@ export default class {
     }
 
     this.database = await createRxDatabase({
-      storage: getRxStoragePouch('idb'),
+      storage: getRxStoragePouch(this.storage),
       ...this.databaseOptions
     })
 
@@ -244,6 +251,15 @@ export default class {
       }
     }
   }
+
+  _getStorageAdapterPlugin () {
+    const storages = {
+      idb: () => require('pouchdb-adapter-idb'),
+      memory: () => require('pouchdb-adapter-memory'),
+    }
+
+    return storages[this.storage]()
+  }
 }
 
 export {
@@ -254,6 +270,5 @@ export {
   find,
   findByIds,
   findOne,
-  getRxStoragePouch,
   nestField
 }

@@ -16,7 +16,6 @@ import {
   find,
   findByIds,
   findOne,
-  getRxStoragePouch,
   nestField
 }, VuexOffline from '@bildvitta/vuex-offline'
 
@@ -65,9 +64,6 @@ const vuexOffline = new VuexOffline({
   idKey: 'uuid',
 
   database: {
-    // "getRxStoragePouch" serve para definir qual o tipo de adapter do PouchDB vai ser utilizado
-    // o default é o "idb"
-    storage: getRxStoragePouch('memory')
     name: 'vxoff',
     multiInstance: true,
     ignoreDuplicate: true,
@@ -234,7 +230,8 @@ const posts = {
       }
     },
 
-    relationship: { // mesma coisa relationshipt abaixo
+    // mesma coisa relationshipt abaixo
+    relationship: {
       categories: {
         name: 'categories',
         type: 'select',
@@ -444,6 +441,9 @@ const vuexOffline = new VuexOffline({
     multiInstance: true,
     ignoreDuplicate: true,
   },
+
+  // "storage" é o tipo de adapter que será utilizado, existem 2 opções por hora, "idb" (default) e "memory" (muito utilizado para testes, uma vez que não persiste os dados e é muito rápido). Então no caso "idb" não é necessário declarar.
+  storage: 'idb', // idb ou memory
 
   // modulos do vuex modules
   modules: [
