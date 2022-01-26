@@ -13,9 +13,10 @@ export default {
     'rxdb/plugins/validate',
     'rxdb/plugins/query-builder',
     'rxdb/plugins/migration',
-    'rxdb/plugins/replication',
+    'rxdb/plugins/replication-couchdb',
     'rxdb/plugins/leader-election',
     'rxdb/plugins/update',
+    'rxdb/plugins/pouchdb',
     'rxdb/dist/es/rx-error.js'
   ],
 
