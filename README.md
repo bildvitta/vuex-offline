@@ -58,7 +58,6 @@ const nested = [
 // retorna [{ label: '1', value: 1 }]
 console.log(nestField(nested, 'destroyed'))
 
-
 // VuexOffline
 const vuexOffline = new VuexOffline({
   idKey: 'uuid',
@@ -124,7 +123,8 @@ const posts = {
   // nome da collection
   name: 'posts',
 
-  perPage: 12, // o valor default já é 12
+  // o valor default já é 12
+  perPage: 12,
 
   // fields usados para o asteroid
   // https://www.notion.so/API-Design-Patterns-5c2509b697614bbbac49cbed0aab70a1

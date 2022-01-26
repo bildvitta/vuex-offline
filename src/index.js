@@ -5,7 +5,6 @@ import { RxDBMigrationPlugin } from 'rxdb/plugins/migration'
 import { RxDBReplicationCouchDBPlugin } from 'rxdb/plugins/replication-couchdb'
 import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election'
 import { RxDBUpdatePlugin } from 'rxdb/plugins/update'
-
 import { getRxStoragePouch, addPouchPlugin, PouchDB } from 'rxdb/plugins/pouchdb'
 
 import { actions, getters, mutations, state } from './module/index.js'
