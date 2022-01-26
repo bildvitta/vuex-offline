@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 # 3.0.0-beta.0 - 26-01-2022
 
 ### Adicionado
-- Nova opção na class VuexOffline `storage`, storage é um [adapter](https://rxdb.info/adapters.html) existem 2 opções por hora, `idb` (default) e `memory` (muito utilizado para testes, uma vez que não persiste os dados e é muito rápido).
+- Nova opção na classe VuexOffline `storage`, storage é um [adapter](https://rxdb.info/adapters.html) existem 2 opções por hora, `idb` (default) e `memory` (muito utilizado para testes, uma vez que não persiste os dados e é muito rápido).
 
 ### Modificado
 - Atualizado "rxdb": "^9.20.0" -> "rxdb": "^11.3.0".
