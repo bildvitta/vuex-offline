@@ -1,3 +1,9 @@
+import _toConsumableArray from '@babel/runtime/helpers/toConsumableArray';
+import _defineProperty from '@babel/runtime/helpers/defineProperty';
+import _asyncToGenerator from '@babel/runtime/helpers/asyncToGenerator';
+import _classCallCheck from '@babel/runtime/helpers/classCallCheck';
+import _createClass from '@babel/runtime/helpers/createClass';
+import _regeneratorRuntime from '@babel/runtime/regenerator';
 import { addRxPlugin, createRxDatabase } from 'rxdb/plugins/core';
 import { RxDBValidatePlugin } from 'rxdb/plugins/validate';
 import { RxDBQueryBuilderPlugin } from 'rxdb/plugins/query-builder';
@@ -8,209 +14,8 @@ import { RxDBUpdatePlugin } from 'rxdb/plugins/update';
 import { addPouchPlugin, getRxStoragePouch } from 'rxdb/plugins/pouchdb';
 export { PouchDB } from 'rxdb/plugins/pouchdb';
 import { cloneDeep } from 'lodash';
+import _typeof from '@babel/runtime/helpers/typeof';
 import { RxError } from 'rxdb/dist/es/rx-error.js';
-
-function ownKeys(object, enumerableOnly) {
-  var keys = Object.keys(object);
-
-  if (Object.getOwnPropertySymbols) {
-    var symbols = Object.getOwnPropertySymbols(object);
-    enumerableOnly && (symbols = symbols.filter(function (sym) {
-      return Object.getOwnPropertyDescriptor(object, sym).enumerable;
-    })), keys.push.apply(keys, symbols);
-  }
-
-  return keys;
-}
-
-function _objectSpread2(target) {
-  for (var i = 1; i < arguments.length; i++) {
-    var source = null != arguments[i] ? arguments[i] : {};
-    i % 2 ? ownKeys(Object(source), !0).forEach(function (key) {
-      _defineProperty(target, key, source[key]);
-    }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) {
-      Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key));
-    });
-  }
-
-  return target;
-}
-
-function _typeof(obj) {
-  "@babel/helpers - typeof";
-
-  return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) {
-    return typeof obj;
-  } : function (obj) {
-    return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-  }, _typeof(obj);
-}
-
-function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
-  try {
-    var info = gen[key](arg);
-    var value = info.value;
-  } catch (error) {
-    reject(error);
-    return;
-  }
-
-  if (info.done) {
-    resolve(value);
-  } else {
-    Promise.resolve(value).then(_next, _throw);
-  }
-}
-
-function _asyncToGenerator(fn) {
-  return function () {
-    var self = this,
-        args = arguments;
-    return new Promise(function (resolve, reject) {
-      var gen = fn.apply(self, args);
-
-      function _next(value) {
-        asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value);
-      }
-
-      function _throw(err) {
-        asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err);
-      }
-
-      _next(undefined);
-    });
-  };
-}
-
-function _classCallCheck(instance, Constructor) {
-  if (!(instance instanceof Constructor)) {
-    throw new TypeError("Cannot call a class as a function");
-  }
-}
-
-function _defineProperties(target, props) {
-  for (var i = 0; i < props.length; i++) {
-    var descriptor = props[i];
-    descriptor.enumerable = descriptor.enumerable || false;
-    descriptor.configurable = true;
-    if ("value" in descriptor) descriptor.writable = true;
-    Object.defineProperty(target, descriptor.key, descriptor);
-  }
-}
-
-function _createClass(Constructor, protoProps, staticProps) {
-  if (protoProps) _defineProperties(Constructor.prototype, protoProps);
-  if (staticProps) _defineProperties(Constructor, staticProps);
-  Object.defineProperty(Constructor, "prototype", {
-    writable: false
-  });
-  return Constructor;
-}
-
-function _defineProperty(obj, key, value) {
-  if (key in obj) {
-    Object.defineProperty(obj, key, {
-      value: value,
-      enumerable: true,
-      configurable: true,
-      writable: true
-    });
-  } else {
-    obj[key] = value;
-  }
-
-  return obj;
-}
-
-function _toConsumableArray(arr) {
-  return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread();
-}
-
-function _arrayWithoutHoles(arr) {
-  if (Array.isArray(arr)) return _arrayLikeToArray(arr);
-}
-
-function _iterableToArray(iter) {
-  if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter);
-}
-
-function _unsupportedIterableToArray(o, minLen) {
-  if (!o) return;
-  if (typeof o === "string") return _arrayLikeToArray(o, minLen);
-  var n = Object.prototype.toString.call(o).slice(8, -1);
-  if (n === "Object" && o.constructor) n = o.constructor.name;
-  if (n === "Map" || n === "Set") return Array.from(o);
-  if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen);
-}
-
-function _arrayLikeToArray(arr, len) {
-  if (len == null || len > arr.length) len = arr.length;
-
-  for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i];
-
-  return arr2;
-}
-
-function _nonIterableSpread() {
-  throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
-}
-
-function _createForOfIteratorHelper(o, allowArrayLike) {
-  var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"];
-
-  if (!it) {
-    if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") {
-      if (it) o = it;
-      var i = 0;
-
-      var F = function () {};
-
-      return {
-        s: F,
-        n: function () {
-          if (i >= o.length) return {
-            done: true
-          };
-          return {
-            done: false,
-            value: o[i++]
-          };
-        },
-        e: function (e) {
-          throw e;
-        },
-        f: F
-      };
-    }
-
-    throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
-  }
-
-  var normalCompletion = true,
-      didErr = false,
-      err;
-  return {
-    s: function () {
-      it = it.call(o);
-    },
-    n: function () {
-      var step = it.next();
-      normalCompletion = step.done;
-      return step;
-    },
-    e: function (e) {
-      didErr = true;
-      err = e;
-    },
-    f: function () {
-      try {
-        if (!normalCompletion && it.return != null) it.return();
-      } finally {
-        if (didErr) throw err;
-      }
-    }
-  };
-}
 
 function deleteBy (object) {
   var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : function () {};
@@ -266,15 +71,29 @@ function findOne (name) {
   return database.collections[name].findOne(queryParam).exec();
 }
 
+function ownKeys$a(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread$a(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$a(Object(source), !0).forEach(function (key) { _defineProperty(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$a(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+
 function formatResponse (response) {
   return {
-    data: _objectSpread2({
+    data: _objectSpread$a({
       status: {
         code: 200
       }
     }, response)
   };
 }
+
+function ownKeys$9(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread$9(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$9(Object(source), !0).forEach(function (key) { _defineProperty(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$9(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+
+function _createForOfIteratorHelper$1(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray$1(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+
+function _unsupportedIterableToArray$1(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray$1(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray$1(o, minLen); }
+
+function _arrayLikeToArray$1(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
 
 var ptBR = {
   'is required': 'Este campo é obrigatório.',
@@ -322,7 +141,7 @@ function formatError (error) {
       result = _error$parameters.obj;
   var errors = {};
 
-  var _iterator = _createForOfIteratorHelper(databaseErrors),
+  var _iterator = _createForOfIteratorHelper$1(databaseErrors),
       _step;
 
   try {
@@ -339,7 +158,7 @@ function formatError (error) {
   }
 
   return {
-    response: formatResponse(_objectSpread2({
+    response: formatResponse(_objectSpread$9({
       status: {
         code: 400
       },
@@ -379,15 +198,18 @@ function setOptions (documents, _ref) {
   });
 }
 
+function ownKeys$8(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread$8(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$8(Object(source), !0).forEach(function (key) { _defineProperty(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$8(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
 function getFieldsWithRelationshipOptions (_x) {
   return _ref2.apply(this, arguments);
 }
 
 function _ref2() {
-  _ref2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(_ref) {
+  _ref2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee(_ref) {
     var fields, idKey, parent, relationships, form, id, methodsModels, model, key, relationship, ref, methods, documents, relKey, relRef, _documents;
 
-    return regeneratorRuntime.wrap(function _callee$(_context) {
+    return _regeneratorRuntime.wrap(function _callee$(_context) {
       while (1) {
         switch (_context.prev = _context.next) {
           case 0:
@@ -403,7 +225,7 @@ function _ref2() {
             model = Object.keys(methodsModels).find(function (item) {
               return methodsModels[item];
             });
-            _context.t0 = regeneratorRuntime.keys(relationships);
+            _context.t0 = _regeneratorRuntime.keys(relationships);
 
           case 5:
             if ((_context.t1 = _context.t0()).done) {
@@ -446,7 +268,7 @@ function _ref2() {
             return _context.abrupt("continue", 5);
 
           case 20:
-            _context.t2 = regeneratorRuntime.keys(relationship);
+            _context.t2 = _regeneratorRuntime.keys(relationship);
 
           case 21:
             if ((_context.t3 = _context.t2()).done) {
@@ -461,7 +283,7 @@ function _ref2() {
 
           case 26:
             _documents = _context.sent;
-            fields[key].children[relKey] = _objectSpread2({
+            fields[key].children[relKey] = _objectSpread$8({
               options: setOptions(_documents, relationship[relKey])
             }, fields[key].children[relKey]);
             _context.next = 21;
@@ -492,6 +314,9 @@ function parseJSON (value) {
   }
 }
 
+function ownKeys$7(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread$7(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$7(Object(source), !0).forEach(function (key) { _defineProperty(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$7(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
 function getFindQuery () {
   var moduleFilters = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
@@ -517,7 +342,7 @@ function getFindQuery () {
           operator = _ref2.operator,
           model = _ref2.model;
 
-      filtersQuery[model || name] = _objectSpread2(_objectSpread2({}, filtersQuery[model || name]), {}, _defineProperty({}, operator || '$regex', parseJSON(value)));
+      filtersQuery[model || name] = _objectSpread$7(_objectSpread$7({}, filtersQuery[model || name]), {}, _defineProperty({}, operator || '$regex', parseJSON(value)));
       continue;
     }
 
@@ -533,7 +358,7 @@ function getFindQuery () {
   }
 
   return {
-    selector: _objectSpread2({}, filtersQuery)
+    selector: _objectSpread$7({}, filtersQuery)
   };
 }
 
@@ -604,21 +429,24 @@ function statusResponse (code, text) {
   };
 }
 
+function ownKeys$6(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread$6(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$6(Object(source), !0).forEach(function (key) { _defineProperty(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$6(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
 function create (module, collection, _ref) {
   var postSaveByAction = _ref.postSaveByAction;
   var defaults = module.defaults,
       fields = module.fields,
       name = module.name;
   return /*#__PURE__*/function () {
-    var _ref4 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(_ref2, _ref3) {
+    var _ref4 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee(_ref2, _ref3) {
       var commit, payload, document, documentJSON;
-      return regeneratorRuntime.wrap(function _callee$(_context) {
+      return _regeneratorRuntime.wrap(function _callee$(_context) {
         while (1) {
           switch (_context.prev = _context.next) {
             case 0:
               commit = _ref2.commit;
               payload = _ref3.payload;
-              payload = _objectSpread2(_objectSpread2({}, setDefaults(defaults)), deleteBy(cloneDeep(payload), function (item) {
+              payload = _objectSpread$6(_objectSpread$6({}, setDefaults(defaults)), deleteBy(cloneDeep(payload), function (item) {
                 return item === undefined;
               }));
               _context.prev = 3;
@@ -663,9 +491,9 @@ function create (module, collection, _ref) {
 
 function destroy (module, collection) {
   return /*#__PURE__*/function () {
-    var _ref3 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(_ref, _ref2) {
+    var _ref3 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee(_ref, _ref2) {
       var commit, id, document, documentJSON;
-      return regeneratorRuntime.wrap(function _callee$(_context) {
+      return _regeneratorRuntime.wrap(function _callee$(_context) {
         while (1) {
           switch (_context.prev = _context.next) {
             case 0:
@@ -720,9 +548,9 @@ function fetchFilters (_ref) {
       idKey = _ref.idKey,
       parent = _ref.parent;
   return /*#__PURE__*/function () {
-    var _ref3 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(_ref2) {
+    var _ref3 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee(_ref2) {
       var commit, fields, relationships, formattedFields;
-      return regeneratorRuntime.wrap(function _callee$(_context) {
+      return _regeneratorRuntime.wrap(function _callee$(_context) {
         while (1) {
           switch (_context.prev = _context.next) {
             case 0:
@@ -765,7 +593,7 @@ function fetchFilters (_ref) {
 
 function fetchList (module, collection) {
   return /*#__PURE__*/function () {
-    var _ref2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(_ref) {
+    var _ref2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee(_ref) {
       var commit,
           _ref3,
           filters,
@@ -786,7 +614,7 @@ function fetchList (module, collection) {
           documentsJSON,
           _args = arguments;
 
-      return regeneratorRuntime.wrap(function _callee$(_context) {
+      return _regeneratorRuntime.wrap(function _callee$(_context) {
         while (1) {
           switch (_context.prev = _context.next) {
             case 0:
@@ -853,18 +681,21 @@ function fetchList (module, collection) {
   }();
 }
 
+function ownKeys$5(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread$5(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$5(Object(source), !0).forEach(function (key) { _defineProperty(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$5(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
 function fetchSingle (module, collection) {
   return /*#__PURE__*/function () {
-    var _ref3 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(_ref, _ref2) {
+    var _ref3 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee(_ref, _ref2) {
       var commit, form, id, fields, document, documentJSON;
-      return regeneratorRuntime.wrap(function _callee$(_context) {
+      return _regeneratorRuntime.wrap(function _callee$(_context) {
         while (1) {
           switch (_context.prev = _context.next) {
             case 0:
               commit = _ref.commit;
               form = _ref2.form, id = _ref2.id;
               _context.next = 4;
-              return getFieldsWithRelationshipOptions(_objectSpread2(_objectSpread2({}, module), {}, {
+              return getFieldsWithRelationshipOptions(_objectSpread$5(_objectSpread$5({}, module), {}, {
                 form: form,
                 id: id
               }));
@@ -923,21 +754,24 @@ function fetchSingle (module, collection) {
   }();
 }
 
+function ownKeys$4(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread$4(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$4(Object(source), !0).forEach(function (key) { _defineProperty(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$4(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
 function update (module, collection, _ref) {
   var postSaveByAction = _ref.postSaveByAction;
   var fields = module.fields,
       updateDefaults = module.updateDefaults,
       name = module.name;
   return /*#__PURE__*/function () {
-    var _ref4 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(_ref2, _ref3) {
+    var _ref4 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee(_ref2, _ref3) {
       var commit, payload, id, document, result;
-      return regeneratorRuntime.wrap(function _callee$(_context) {
+      return _regeneratorRuntime.wrap(function _callee$(_context) {
         while (1) {
           switch (_context.prev = _context.next) {
             case 0:
               commit = _ref2.commit;
               payload = _ref3.payload, id = _ref3.id;
-              payload = _objectSpread2(_objectSpread2({}, payload), setDefaults(updateDefaults));
+              payload = _objectSpread$4(_objectSpread$4({}, payload), setDefaults(updateDefaults));
               _context.prev = 3;
               _context.next = 6;
               return collection.findOne(id).exec();
@@ -963,7 +797,7 @@ function update (module, collection, _ref) {
               });
 
             case 12:
-              result = _objectSpread2(_objectSpread2({}, document.toJSON()), payload);
+              result = _objectSpread$4(_objectSpread$4({}, document.toJSON()), payload);
               commit('replaceItem', result);
               postSaveByAction({
                 name: name,
@@ -1007,10 +841,14 @@ var actions = {
   update: update
 };
 
+function ownKeys$3(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread$3(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$3(Object(source), !0).forEach(function (key) { _defineProperty(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$3(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+
 function getters (_ref) {
   var getters = _ref.getters,
       idKey = _ref.idKey;
-  return _objectSpread2({
+  return _objectSpread$3({
     list: function list(state) {
       return state.list;
     },
@@ -1030,11 +868,15 @@ function getters (_ref) {
   }, getters);
 }
 
+function ownKeys$2(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread$2(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$2(Object(source), !0).forEach(function (key) { _defineProperty(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$2(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+
 function mutations (_ref) {
   var idKey = _ref.idKey,
       mutations = _ref.mutations,
       perPage = _ref.perPage;
-  return _objectSpread2({
+  return _objectSpread$2({
     setFilters: function setFilters(state, payload) {
       state.filters = payload;
     },
@@ -1078,9 +920,13 @@ function mutations (_ref) {
   }, mutations);
 }
 
+function ownKeys$1(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread$1(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys$1(Object(source), !0).forEach(function (key) { _defineProperty(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys$1(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+
 function state (_ref) {
   var state = _ref.state;
-  return _objectSpread2({
+  return _objectSpread$1({
     list: [],
     filters: {},
     totalPages: 0
@@ -1097,6 +943,15 @@ function createUUID () {
   });
 }
 
+function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { _defineProperty(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
 var database = null;
 
 var _default = /*#__PURE__*/function () {
@@ -1161,8 +1016,8 @@ var _default = /*#__PURE__*/function () {
   }, {
     key: "createDatabase",
     value: function () {
-      var _createDatabase = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
-        return regeneratorRuntime.wrap(function _callee$(_context) {
+      var _createDatabase = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee() {
+        return _regeneratorRuntime.wrap(function _callee$(_context) {
           while (1) {
             switch (_context.prev = _context.next) {
               case 0:
@@ -1176,7 +1031,7 @@ var _default = /*#__PURE__*/function () {
                 }
 
                 _context.next = 5;
-                return createRxDatabase(_objectSpread2({
+                return createRxDatabase(_objectSpread({
                   storage: getRxStoragePouch(this.storage)
                 }, this.databaseOptions));
 
@@ -1211,10 +1066,10 @@ var _default = /*#__PURE__*/function () {
   }, {
     key: "setupCollections",
     value: function () {
-      var _setupCollections = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2() {
+      var _setupCollections = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2() {
         var collections, _iterator, _step, module, _iterator2, _step2, _module;
 
-        return regeneratorRuntime.wrap(function _callee2$(_context2) {
+        return _regeneratorRuntime.wrap(function _callee2$(_context2) {
           while (1) {
             switch (_context2.prev = _context2.next) {
               case 0:
@@ -1306,7 +1161,7 @@ var _default = /*#__PURE__*/function () {
       var params = [module, collection, this.interceptors];
       return {
         namespaced: true,
-        actions: _objectSpread2({
+        actions: _objectSpread({
           create: has('CREATE') && actions.create.apply(actions, params),
           destroy: has('DESTROY') && actions.destroy.apply(actions, params),
           fetchFilters: has('FETCH_FILTERS') && actions.fetchFilters.apply(actions, params),
@@ -1338,12 +1193,12 @@ var _default = /*#__PURE__*/function () {
   }, {
     key: "makeSync",
     value: function () {
-      var _makeSync = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee3(collections) {
+      var _makeSync = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee3(collections) {
         var _this = this;
 
         var defaultOptions, collectionsToSync, collectionsActiveSync, handleOnSync, _loop, collectionIndex;
 
-        return regeneratorRuntime.wrap(function _callee3$(_context4) {
+        return _regeneratorRuntime.wrap(function _callee3$(_context4) {
           while (1) {
             switch (_context4.prev = _context4.next) {
               case 0:
@@ -1375,9 +1230,9 @@ var _default = /*#__PURE__*/function () {
                   });
                 };
 
-                _loop = /*#__PURE__*/regeneratorRuntime.mark(function _loop(collectionIndex) {
+                _loop = /*#__PURE__*/_regeneratorRuntime.mark(function _loop(collectionIndex) {
                   var collectionName, moduleByName, moduleOptions, syncOptions, query, syncState;
-                  return regeneratorRuntime.wrap(function _loop$(_context3) {
+                  return _regeneratorRuntime.wrap(function _loop$(_context3) {
                     while (1) {
                       switch (_context3.prev = _context3.next) {
                         case 0:
@@ -1386,7 +1241,7 @@ var _default = /*#__PURE__*/function () {
                             return module.name === collectionName;
                           });
                           moduleOptions = moduleByName.sync && moduleByName.sync.options || {};
-                          syncOptions = _objectSpread2(_objectSpread2(_objectSpread2({}, defaultOptions), _this.sync.options), moduleOptions);
+                          syncOptions = _objectSpread(_objectSpread(_objectSpread({}, defaultOptions), _this.sync.options), moduleOptions);
 
                           query = moduleByName.sync && moduleByName.sync.query || _this.sync.query || function () {};
 
@@ -1399,7 +1254,7 @@ var _default = /*#__PURE__*/function () {
 
                         case 7:
                           _context3.next = 9;
-                          return _this.collections[collectionName].syncCouchDB(_objectSpread2(_objectSpread2({}, syncOptions), {}, {
+                          return _this.collections[collectionName].syncCouchDB(_objectSpread(_objectSpread({}, syncOptions), {}, {
                             remote: "".concat(syncOptions.baseURL, "/").concat(collectionName),
                             query: query(_this.collections[collectionName])
                           }));
@@ -1422,7 +1277,7 @@ var _default = /*#__PURE__*/function () {
                     }
                   }, _loop);
                 });
-                _context4.t0 = regeneratorRuntime.keys(collectionsToSync);
+                _context4.t0 = _regeneratorRuntime.keys(collectionsToSync);
 
               case 6:
                 if ((_context4.t1 = _context4.t0()).done) {

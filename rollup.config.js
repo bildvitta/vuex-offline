@@ -37,6 +37,6 @@ export default {
 
   plugins: [
     remove({ targets: 'dist/*' }),
-    babel({ exclude: 'node_modules/**' })
+    babel({ exclude: 'node_modules/**', runtimeHelpers: true })
   ]
 }
