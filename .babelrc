@@ -3,5 +3,11 @@
     ["@babel/env"]
   ],
 
-  "plugins": ["@babel/plugin-proposal-export-default-from"]
+  "plugins": [
+    "@babel/plugin-proposal-export-default-from",
+    ["@babel/plugin-transform-runtime", {
+        "regenerator": true
+      }
+    ]
+  ]
 }
