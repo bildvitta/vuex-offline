@@ -4,7 +4,13 @@ import _asyncToGenerator from '@babel/runtime/helpers/asyncToGenerator';
 import _classCallCheck from '@babel/runtime/helpers/classCallCheck';
 import _createClass from '@babel/runtime/helpers/createClass';
 import _regeneratorRuntime from '@babel/runtime/regenerator';
-import { createRxDatabase } from 'rxdb';
+import { addRxPlugin, createRxDatabase } from 'rxdb/plugins/core';
+import { RxDBValidatePlugin } from 'rxdb/plugins/validate';
+import { RxDBQueryBuilderPlugin } from 'rxdb/plugins/query-builder';
+import { RxDBMigrationPlugin } from 'rxdb/plugins/migration';
+import { RxDBReplicationCouchDBPlugin } from 'rxdb/plugins/replication-couchdb';
+import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election';
+import { RxDBUpdatePlugin } from 'rxdb/plugins/update';
 import { addPouchPlugin, getRxStoragePouch } from 'rxdb/plugins/pouchdb';
 export { PouchDB } from 'rxdb/plugins/pouchdb';
 import { cloneDeep } from 'lodash';
@@ -984,14 +990,26 @@ var _default = /*#__PURE__*/function () {
   }
 
   _createClass(_default, [{
-    key: "addDatabasePouchPlugin",
-    value: function addDatabasePouchPlugin() {
+    key: "addDatabasePlugin",
+    value: function addDatabasePlugin() {
       for (var _len = arguments.length, plugins = new Array(_len), _key = 0; _key < _len; _key++) {
         plugins[_key] = arguments[_key];
       }
 
       for (var _i = 0, _plugins = plugins; _i < _plugins.length; _i++) {
         var plugin = _plugins[_i];
+        addRxPlugin(plugin);
+      }
+    }
+  }, {
+    key: "addDatabasePouchPlugin",
+    value: function addDatabasePouchPlugin() {
+      for (var _len2 = arguments.length, plugins = new Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+        plugins[_key2] = arguments[_key2];
+      }
+
+      for (var _i2 = 0, _plugins2 = plugins; _i2 < _plugins2.length; _i2++) {
+        var plugin = _plugins2[_i2];
         addPouchPlugin(plugin);
       }
     }
@@ -1003,17 +1021,25 @@ var _default = /*#__PURE__*/function () {
           while (1) {
             switch (_context.prev = _context.next) {
               case 0:
+                // Custom Build
+                // https://rxdb.info/custom-build.html
+                this.addDatabasePlugin(RxDBValidatePlugin, RxDBQueryBuilderPlugin, RxDBMigrationPlugin, RxDBReplicationCouchDBPlugin, RxDBLeaderElectionPlugin, RxDBUpdatePlugin);
                 this.addDatabasePouchPlugin(require('pouchdb-adapter-http'), this._getStorageAdapterPlugin());
-                _context.next = 3;
+
+                if (process.env.DEBUGGING) {
+                  this.addDatabasePlugin(require('rxdb/plugins/dev-mode').RxDBDevModePlugin);
+                }
+
+                _context.next = 5;
                 return createRxDatabase(_objectSpread({
                   storage: getRxStoragePouch(this.storage)
                 }, this.databaseOptions));
 
-              case 3:
+              case 5:
                 this.database = _context.sent;
                 database = this.database;
 
-              case 5:
+              case 7:
               case "end":
                 return _context.stop();
             }
