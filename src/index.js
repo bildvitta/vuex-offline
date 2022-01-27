@@ -1,10 +1,4 @@
-import { addRxPlugin, createRxDatabase } from 'rxdb/plugins/core'
-import { RxDBValidatePlugin } from 'rxdb/plugins/validate'
-import { RxDBQueryBuilderPlugin } from 'rxdb/plugins/query-builder'
-import { RxDBMigrationPlugin } from 'rxdb/plugins/migration'
-import { RxDBReplicationCouchDBPlugin } from 'rxdb/plugins/replication-couchdb'
-import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election'
-import { RxDBUpdatePlugin } from 'rxdb/plugins/update'
+import { createRxDatabase } from 'rxdb'
 import { getRxStoragePouch, addPouchPlugin, PouchDB } from 'rxdb/plugins/pouchdb'
 
 import { actions, getters, mutations, state } from './module/index.js'
@@ -66,12 +60,6 @@ export default class {
     ]
   }
 
-  addDatabasePlugin (...plugins) {
-    for (const plugin of plugins) {
-      addRxPlugin(plugin)
-    }
-  }
-
   addDatabasePouchPlugin (...plugins) {
     for (const plugin of plugins) {
       addPouchPlugin(plugin)
@@ -79,27 +67,10 @@ export default class {
   }
 
   async createDatabase () {
-    // Custom Build
-    // https://rxdb.info/custom-build.html
-    this.addDatabasePlugin(
-      RxDBValidatePlugin,
-      RxDBQueryBuilderPlugin,
-      RxDBMigrationPlugin,
-      RxDBReplicationCouchDBPlugin,
-      RxDBLeaderElectionPlugin,
-      RxDBUpdatePlugin
-    )
-
     this.addDatabasePouchPlugin(
       require('pouchdb-adapter-http'),
       this._getStorageAdapterPlugin()
     )
-
-    if (process.env.DEBUGGING) {
-      this.addDatabasePlugin(
-        require('rxdb/plugins/dev-mode').RxDBDevModePlugin
-      )
-    }
 
     this.database = await createRxDatabase({
       storage: getRxStoragePouch(this.storage),
