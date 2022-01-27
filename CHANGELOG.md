@@ -9,10 +9,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Corrigido
 - Removido custom build.
 
-### Corrigido
-- Adicionado "@babel/plugin-transform-runtime" para resolver erros de build.
-
-
 # 3.0.0-beta.2 - 26-01-2022
 
 ### Corrigido
