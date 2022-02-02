@@ -460,8 +460,7 @@ const vuexOffline = new VuexOffline({
 
     // callback customizado da aplicação para saber a porcantagem do sync e a quantidade de dados sincronizados
     onSync: (percentage, syncedData) => {
-      console.log(percentage)
-      console.log(syncedData)
+      console.log(percentage, syncedData)
     }
   },
 
