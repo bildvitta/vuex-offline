@@ -217,7 +217,7 @@ export default class {
 
       syncState.change$.subscribe(change => {
         docs[collectionName] = change.change ? change.change.docs_read : change.docs_read
-        syncedData = Object.values(docs).reduce((acc, act) => acc + act, 0)
+        syncedData = Object.values(docs).reduce((accumulator, currentValue) => accumulator + currentValue, 0)
         
         runOnSync(percentage, syncedData)
       })
