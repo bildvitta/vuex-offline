@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Modificado
 - Novo callback na função `handleOnSync` para emitir os dados sincronizados.
-- Nova função `runOnSync` para evitar duplicidade de código em `handleOnSync`. Ela fica responsável por chamar o hook `onSync`
+- Nova função `runOnSync` para evitar duplicidade de código em `handleOnSync`. Ela fica responsável por chamar o hook `onSync`.
 
 # 3.0.0 - 02-02-2022
 
