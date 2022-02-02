@@ -1196,7 +1196,7 @@ var _default = /*#__PURE__*/function () {
       var _makeSync = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee3(collections) {
         var _this = this;
 
-        var defaultOptions, collectionsToSync, collectionsActiveSync, handleOnSync, _loop, collectionIndex;
+        var defaultOptions, collectionsToSync, collectionsActiveSync, docs, percentage, syncedData, handleOnSync, _loop, collectionIndex;
 
         return _regeneratorRuntime.wrap(function _callee3$(_context4) {
           while (1) {
@@ -1215,8 +1215,23 @@ var _default = /*#__PURE__*/function () {
                 };
                 collectionsToSync = collections || Object.keys(this.collections);
                 collectionsActiveSync = {};
+                docs = {};
+                percentage = 0;
+                syncedData = 0;
 
                 handleOnSync = function handleOnSync(syncState, collectionName, moduleByName) {
+                  var runOnSync = function runOnSync(percentage, syncedData, collectionsActiveSync) {
+                    _this.sync.onSync && _this.sync.onSync(percentage, syncedData, collectionsActiveSync);
+                    moduleByName.sync && moduleByName.sync.onSync && moduleByName.sync.onSync(percentage, syncedData, collectionsActiveSync);
+                  };
+
+                  syncState.change$.subscribe(function (change) {
+                    docs[collectionName] = change.change ? change.change.docs_read : change.docs_read;
+                    syncedData = Object.values(docs).reduce(function (accumulator, currentValue) {
+                      return accumulator + currentValue;
+                    }, 0);
+                    runOnSync(percentage, syncedData);
+                  });
                   syncState.active$.subscribe(function (active) {
                     if (!Object.keys(collectionsActiveSync).length && !active) return;
                     Object.assign(collectionsActiveSync, _defineProperty({}, collectionName, active));
@@ -1224,9 +1239,8 @@ var _default = /*#__PURE__*/function () {
                     var quantityOfFinishedSync = collectionsList.filter(function (value) {
                       return !value;
                     }).length;
-                    var percentage = quantityOfFinishedSync ? Math.round(100 * quantityOfFinishedSync / collectionsList.length) : 0;
-                    _this.sync.onSync && _this.sync.onSync(percentage, collectionsActiveSync);
-                    moduleByName.sync && moduleByName.sync.onSync && moduleByName.sync.onSync(percentage, collectionsActiveSync);
+                    percentage = quantityOfFinishedSync ? Math.round(100 * quantityOfFinishedSync / collectionsList.length) : 0;
+                    runOnSync(percentage, syncedData, collectionsActiveSync);
                   });
                 };
 
@@ -1279,20 +1293,20 @@ var _default = /*#__PURE__*/function () {
                 });
                 _context4.t0 = _regeneratorRuntime.keys(collectionsToSync);
 
-              case 6:
+              case 9:
                 if ((_context4.t1 = _context4.t0()).done) {
-                  _context4.next = 11;
+                  _context4.next = 14;
                   break;
                 }
 
                 collectionIndex = _context4.t1.value;
-                return _context4.delegateYield(_loop(collectionIndex), "t2", 9);
+                return _context4.delegateYield(_loop(collectionIndex), "t2", 12);
 
-              case 9:
-                _context4.next = 6;
+              case 12:
+                _context4.next = 9;
                 break;
 
-              case 11:
+              case 14:
               case "end":
                 return _context4.stop();
             }
