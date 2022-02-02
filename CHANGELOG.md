@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+# 3.0.0 - 02-02-2022
+
+### Adicionado
+- Nova opção na classe VuexOffline `storage`, storage é um [adapter](https://rxdb.info/adapters.html), existem 2 opções por hora, `idb` (default) e `memory` (muito utilizado para testes, uma vez que não persiste os dados e é muito rápido).
+- Nova [documentação](https://github.com/bildvitta/vuex-offline#readme).
+
+### Modificado
+- Atualizado "rxdb": "^11.3.0" -> "rxdb": "^10.5.4".
+- Atualizado "rxjs": "^7.5.2" -> "rxjs": "^7.4.0".
+- Documentação atualizada para português.
 # 3.0.0-beta.4 - 27-01-2022
 
 ### Adicionado
