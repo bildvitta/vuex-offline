@@ -205,8 +205,23 @@ export default class {
 
     const collectionsToSync = collections || Object.keys(this.collections)
     let collectionsActiveSync = {}
+    let docs = {}
+    let percentage = 0
+    let syncedData = 0
 
     const handleOnSync = (syncState, collectionName, moduleByName) => {
+      const runOnSync = (percentage, syncedData, collectionsActiveSync) => {
+        this.sync.onSync && this.sync.onSync(percentage, syncedData, collectionsActiveSync)
+        moduleByName.sync && moduleByName.sync.onSync && moduleByName.sync.onSync(percentage, syncedData, collectionsActiveSync)
+      }
+
+      syncState.change$.subscribe(change => {
+        docs[collectionName] = change.change ? change.change.docs_read : change.docs_read
+        syncedData = Object.values(docs).reduce((accumulator, currentValue) => accumulator + currentValue, 0)
+        
+        runOnSync(percentage, syncedData)
+      })
+
       syncState.active$.subscribe(active => {
         if (!Object.keys(collectionsActiveSync).length && !active) return
 
@@ -214,12 +229,9 @@ export default class {
 
         const collectionsList = Object.values(collectionsActiveSync)
         const quantityOfFinishedSync = collectionsList.filter(value => !value).length
+        percentage = quantityOfFinishedSync ? Math.round((100 * quantityOfFinishedSync) / collectionsList.length) : 0
 
-        const percentage = quantityOfFinishedSync ? Math.round((100 * quantityOfFinishedSync) / collectionsList.length) : 0
-
-        this.sync.onSync && this.sync.onSync(percentage, collectionsActiveSync)
-
-        moduleByName.sync && moduleByName.sync.onSync && moduleByName.sync.onSync(percentage, collectionsActiveSync)
+        runOnSync(percentage, syncedData, collectionsActiveSync)
       })
     }
 
