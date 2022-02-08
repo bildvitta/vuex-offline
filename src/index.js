@@ -6,6 +6,7 @@ import { RxDBReplicationCouchDBPlugin } from 'rxdb/plugins/replication-couchdb'
 import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election'
 import { RxDBUpdatePlugin } from 'rxdb/plugins/update'
 import { getRxStoragePouch, addPouchPlugin, PouchDB } from 'rxdb/plugins/pouchdb'
+import { RxDBJsonDumpPlugin } from 'rxdb/plugins/json-dump'
 
 import { actions, getters, mutations, state } from './module/index.js'
 
@@ -87,7 +88,8 @@ export default class {
       RxDBMigrationPlugin,
       RxDBReplicationCouchDBPlugin,
       RxDBLeaderElectionPlugin,
-      RxDBUpdatePlugin
+      RxDBUpdatePlugin,
+      RxDBJsonDumpPlugin
     )
 
     this.addDatabasePouchPlugin(
