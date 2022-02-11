@@ -13,6 +13,7 @@ import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election';
 import { RxDBUpdatePlugin } from 'rxdb/plugins/update';
 import { addPouchPlugin, getRxStoragePouch } from 'rxdb/plugins/pouchdb';
 export { PouchDB } from 'rxdb/plugins/pouchdb';
+import { RxDBJsonDumpPlugin } from 'rxdb/plugins/json-dump';
 import { cloneDeep } from 'lodash';
 import _typeof from '@babel/runtime/helpers/typeof';
 import { RxError } from 'rxdb/dist/es/rx-error.js';
@@ -1023,7 +1024,7 @@ var _default = /*#__PURE__*/function () {
               case 0:
                 // Custom Build
                 // https://rxdb.info/custom-build.html
-                this.addDatabasePlugin(RxDBValidatePlugin, RxDBQueryBuilderPlugin, RxDBMigrationPlugin, RxDBReplicationCouchDBPlugin, RxDBLeaderElectionPlugin, RxDBUpdatePlugin);
+                this.addDatabasePlugin(RxDBValidatePlugin, RxDBQueryBuilderPlugin, RxDBMigrationPlugin, RxDBReplicationCouchDBPlugin, RxDBLeaderElectionPlugin, RxDBUpdatePlugin, RxDBJsonDumpPlugin);
                 this.addDatabasePouchPlugin(require('pouchdb-adapter-http'), this._getStorageAdapterPlugin());
 
                 if (process.env.DEBUGGING) {
