@@ -4,11 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-# Não Lançado
+# 3.2.0 - 11-02-2022
 
 ### Adicionado
 - Adicionado plugin `RxDBJsonDumpPlugin` para importar e exportar JSON do banco de dados.
-- Adicionado à documentação a forma de utilizar o recurso
+- Adicionado à documentação a forma de utilizar o recurso.
 
 # 3.1.0 - 03-02-2022
 
