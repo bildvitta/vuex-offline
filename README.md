@@ -482,6 +482,14 @@ new Vuex.Store({
 })
 ```
 
+## Uso de import/export JSON
+
+```js
+collection.importJSON({ arrayDeDados, schemaHash: hashDaCollection})
+
+const data = await collection.exportJSON()
+```
+
 ## Links úteis
 - [RxDB](https://rxdb.info/)
 - [Asteroid](http://asteroid.nave.dev/)
