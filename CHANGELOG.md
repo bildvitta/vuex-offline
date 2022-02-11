@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 # Não Lançado
 
 ### Adicionado
-- Novo plugin para importar e exportar JSON do banco de dados.
+- Adicionado plugin `RxDBJsonDumpPlugin` para importar e exportar JSON do banco de dados.
 - Adicionado à documentação a forma de utilizar o recurso
 
 # 3.1.0 - 03-02-2022
