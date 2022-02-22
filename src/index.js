@@ -212,20 +212,39 @@ export default class {
 
       const token = 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiI5M2Y1MmRlMC0xYmViLTQ2ODYtODZiOC0xMjdjMWNjZDIzNGYiLCJqdGkiOiJiZTYzYzg1NTA4YzJkZWU2OTA2OGU3MTM0OTE3MzlkNWEzZWIxMmRiOWI5OTM2YTNiNjA2ZTMwMGZjYTdkZDI5ZTljNzdmMjdmOTc1MGE0ZiIsImlhdCI6MTY0NTQ3MDUzMy41NTg2MDcsIm5iZiI6MTY0NTQ3MDUzMy41NTg2MTUsImV4cCI6MTY3NzAwNjUzMy41MTg0NzYsInN1YiI6IjEyIiwic2NvcGVzIjpbInByb2ZpbGUiXX0.BxigcMwQp8RRls6wn7VN-e4JjUmY5F6Rg-m1jBhg_rTBaOlvdqexXwqG8Q6MRo8hvp83wjUkd5OLCNqaskg-Hu5TM61DzF2imIurc4T1VgryPNdKhuXG7nNhq_FPgF3R0FknrwVCBR5T7uBEgp8olRijoAwcKGxoG1miMw_CR40U54AHRjiKs60rlmB9IOUR4wqbdLvfuzSklY97xACGoWosQcqrMcuRZ5NiD_ya_5NKrKrdKFgMWoVx_1n9LBxljuX4AIQ3jTaro01_fIdL6FMwqXBy-Oc084oQ1wwfDpWVn7rjnKWDj-X1m_1gF6iFuqJocd04rs53mqUFa8pBtBODSzfQMuWE6SAOpCS2srgT6CtrFdBR2yQlwG9m7QOd9L5FYqZAFdNJAxFmDStxxd1-oJZeTmrceoOWOYxhiTpq07ZmP166NPvAZ3kapHEzSQW5xYPh7QqtoCAcyQCVhRXIB-WkebksaAg7JJII4HHvr1B-jTzfea6hD31k3D9rdE-fYYuSWNUIs-wxeJKXib3tVjLZxv4kTvzHnf7xZn9MeK8b6X3Nxgzn3D-VNhgTSJGGD9yiaZBUnd4LEPjiPjGMqqFwJ0jqpS6SWgnTTIwCCCf8PyrXZM1bYypCO6qSdlhSpDIaLg2zPaxn8ZZxi-xdm-lq6IjhSlsBoDEhLsk'
 
+      // let lastSequence = 'now'
+      // do {
+      //   const changes = await fetch(
+      //     `https://localhost:3000/api/couchdb/clayton/_changes?feed=longpoll&since=${lastSequence}`,
+      //     {
+      //       headers: {
+      //         Authorization: token,
+      //         Accept: 'application/json'
+      //       }
+      //     }
+      //   )
+        
+      //   const cleyton = await changes.json()
+      //   console.log(cleyton, '<-- cleyton')
+      //   lastSequence = cleyton.last_seq
+      // } while (true)
+
+      // console.log(changes.json(), '<----- changes')
+
       const offsets = {}
 
       const syncState = await replicateRxCollection({
         collection: this.collections[collectionName],
         replicationIdentifier: `my-custom-rest-replication-${collectionName}`,
-        live: true,
-        liveInterval: 10000,
+        live: false,
+        liveInterval: 1000,
         retryTime: 10000,
         pull: {
           async handler() {
             const latestOffset = offsets[collectionName] || 0
-            const limitPerPull = 100
+            const limitPerPull = 60000
             const response = await fetch(
-              `https://localhost:3000/api/sync/clayton/?limit=${limitPerPull}&offset=${latestOffset}`,
+              `https://localhost:3000/api/sync/providers/?limit=${limitPerPull}&offset=${latestOffset}`,
               {
                 headers: {
                   Authorization: token,
@@ -268,7 +287,9 @@ export default class {
       console.log(syncState, '<---- syncState')
 
       syncState.error$.subscribe(error => console.log(error,'deu erro'))
-      syncState.change$.subscribe(change => console.log(change, '<--- change'))
+      // syncState.change$.subscribe(change => console.log(change, '<--- ch
+      syncState.received$.subscribe(doc => console.log(doc, '<--- doc'))
+      syncState.active$.subscribe(active => console.log(active, '<--- active'))
     }
   }
 
