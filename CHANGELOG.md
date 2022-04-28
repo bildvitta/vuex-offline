@@ -4,11 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-# Não lançado
+# Não publicado
 
 ### Corrigido
-- Adicionado `throw error` na tratativa de erros na action `destroy`. 
-- Problema: não era disparado o erro para ser tratado na chamada da `action`, fazendo com que o erro não caisse no catch.
+- Adicionado `throw error` na tratativa de erros na action `destroy` para conseguir recuperar o erro.
 
 # 3.2.0 - 11-02-2022
 
