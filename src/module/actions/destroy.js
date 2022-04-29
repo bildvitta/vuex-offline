@@ -18,7 +18,7 @@ export default function (module, collection) {
       commit('removeListItem', id)
       return formatResponse({ result: documentJSON })
     } catch (error) {
-      return error
+      throw error
     }
   }
 }
