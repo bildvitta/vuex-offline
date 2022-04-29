@@ -528,7 +528,7 @@ function destroy (module, collection) {
             case 15:
               _context.prev = 15;
               _context.t0 = _context["catch"](2);
-              return _context.abrupt("return", _context.t0);
+              throw _context.t0;
 
             case 18:
             case "end":
