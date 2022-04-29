@@ -6,7 +6,7 @@ import {
 export default function (module, collection) {
   return async function ({ commit }, { id }) {
     try {
-      const document = await collection.findOne(id).exec()      
+      const document = await collection.findOne(id).exec()
 
       if (!document) {
         throw statusResponse(404, 'Not found')
