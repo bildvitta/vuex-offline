@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 # Não publicado
 
 ### Corrigido
-- Adicionado `throw error` na tratativa de erros na action `destroy` para conseguir recuperar o erro.
+- Quando ocorrer uma exceção na action `destroy`, ao invés de dar `return error` agora é feito `throw error`.
 
 # 3.2.0 - 11-02-2022
 
